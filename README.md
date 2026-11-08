@@ -10,13 +10,23 @@
 - **艾宾浩斯遗忘曲线**：保持率估算 + 9 节点复习阶梯 + SM-2 间隔重复排期
 - 30 天训练计划、连续打卡、记忆精度 Lv.1–5、徽章
 
+## 界面
+
+| 今日 | 训练场 | 方法库 | 我的 |
+| --- | --- | --- | --- |
+| ![](Docs/screenshots/today.png) | ![](Docs/screenshots/drill.png) | ![](Docs/screenshots/library.png) | ![](Docs/screenshots/profile.png) |
+
+| 方法练习 | 错题强化 | 学习日历 | 遗忘曲线 |
+| --- | --- | --- | --- |
+| ![](Docs/screenshots/quiz.png) | ![](Docs/screenshots/wrongbook.png) | ![](Docs/screenshots/calendar.png) | ![](Docs/screenshots/curve.png) |
+
 ## 打开与运行
 
 ```bash
 open Mnemo.xcodeproj        # Xcode 27，选 iPhone 模拟器直接 Cmd+R
 ```
 
-命令行构建（本机环境需要，见下）：
+命令行构建：
 
 ```bash
 xcodebuild -project Mnemo.xcodeproj -scheme Mnemo \
