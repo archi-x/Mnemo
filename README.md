@@ -1,5 +1,9 @@
 # 忆境 Mnemo
 
+[![Build](https://github.com/archi-x/Mnemo/actions/workflows/build.yml/badge.svg)](https://github.com/archi-x/Mnemo/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/iOS-18.0%2B-blue)
+
 把 Obsidian 里的《记忆法全景手册》变成一个每天真的练一次的原生 iOS App。
 
 - 40 个记忆法知识库（自动从手册 + 儿童版抽取）
@@ -86,3 +90,7 @@ xcrun simctl launch "iPhone 18 Pro" com.tal.mnemo -seedDemo
 ```bash
 python3 Scripts/extract.py
 ```
+
+## 许可
+
+MIT，见 [LICENSE](LICENSE)。
