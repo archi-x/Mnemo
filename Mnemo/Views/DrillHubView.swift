@@ -10,6 +10,10 @@ struct DrillHubView: View {
     @State private var showWrongBook = false
     @State private var showCurve = false
     @State private var showCalendar = false
+    @State private var showQuest = false
+    @State private var showGoals = false
+    @State private var showReport = false
+    @State private var showRank = false
 
     var body: some View {
         NavigationStack {
@@ -56,6 +60,8 @@ struct DrillHubView: View {
 
                     weekCard
 
+                    advancedSection
+
                     recordsSection
 
                     VStack(alignment: .leading, spacing: 8) {
@@ -79,6 +85,10 @@ struct DrillHubView: View {
             .fullScreenCover(isPresented: $showLibrary) { LibraryView(modal: true) }
             .fullScreenCover(isPresented: $showWrongBook) { WrongBookView() }
             .fullScreenCover(isPresented: $showCurve) { ForgettingCurveView() }
+            .fullScreenCover(isPresented: $showQuest) { QuestMapView() }
+            .fullScreenCover(isPresented: $showGoals) { GoalsView() }
+            .fullScreenCover(isPresented: $showReport) { ReportView() }
+            .fullScreenCover(isPresented: $showRank) { LeaderboardView() }
             .sheet(isPresented: $showCalendar) { CalendarView() }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
@@ -89,8 +99,42 @@ struct DrillHubView: View {
                 case "wrong": showWrongBook = true
                 case "curve": showCurve = true
                 case "calendar": showCalendar = true
+                case "quest": showQuest = true
+                case "goals": showGoals = true
+                case "report": showReport = true
+                case "rank": showRank = true
                 default: break
                 }
+            }
+        }
+    }
+
+    private var advancedSection: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            SectionHeader(title: "进阶玩法")
+            EntryRow(symbol: "map.fill", tint: Theme.tint("code"),
+                     title: "闯关地图",
+                     detail: "七章 40 关，拿星解锁下一关",
+                     trailing: "\(store.totalStars)/\(store.maxStars) 星") {
+                showQuest = true
+            }
+            EntryRow(symbol: "target", tint: Theme.tint("deep"),
+                     title: "目标计划",
+                     detail: store.goals.isEmpty ? "还没有设定目标" : "\(store.goals.count) 个目标追踪中",
+                     trailing: "Lv.\(store.learnerLevel.index)") {
+                showGoals = true
+            }
+            EntryRow(symbol: "chart.bar.doc.horizontal.fill", tint: Theme.tint("struct"),
+                     title: "学习报告",
+                     detail: "本周 \(store.weekReport().sessions) 次 · 正确率 \(Int(store.weekReport().accuracy * 100))%",
+                     trailing: "查看") {
+                showReport = true
+            }
+            EntryRow(symbol: "list.number", tint: Theme.tint("seq"),
+                     title: "同级别排名",
+                     detail: "同级第 \(store.myRank().rank) / \(store.myRank().total) 名",
+                     trailing: "\(store.weekXP) XP") {
+                showRank = true
             }
         }
     }

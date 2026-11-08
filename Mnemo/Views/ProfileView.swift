@@ -6,6 +6,10 @@ struct ProfileView: View {
     @State private var showCalendar = false
     @State private var showWrongBook = false
     @State private var showCurve = false
+    @State private var showQuest = false
+    @State private var showGoals = false
+    @State private var showReport = false
+    @State private var showRank = false
 
     private var accuracyText: String {
         store.stats.totalItems == 0 ? "—" : "\(Int(store.stats.accuracy * 100))"
@@ -32,6 +36,10 @@ struct ProfileView: View {
             .sheet(isPresented: $showCalendar) { CalendarView() }
             .fullScreenCover(isPresented: $showWrongBook) { WrongBookView() }
             .fullScreenCover(isPresented: $showCurve) { ForgettingCurveView() }
+            .fullScreenCover(isPresented: $showQuest) { QuestMapView() }
+            .fullScreenCover(isPresented: $showGoals) { GoalsView() }
+            .fullScreenCover(isPresented: $showReport) { ReportView() }
+            .fullScreenCover(isPresented: $showRank) { LeaderboardView() }
             .confirmationDialog("清空所有训练数据？", isPresented: $showReset, titleVisibility: .visible) {
                 Button("清空并重置", role: .destructive) {
                     Haptic.failure()
@@ -59,17 +67,25 @@ struct ProfileView: View {
                                 .strokeBorder(Theme.accent.opacity(0.25), lineWidth: 1)
                         )
                 )
-            VStack(alignment: .leading, spacing: 4) {
-                Text("记忆学徒")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.text)
-                HStack(spacing: 6) {
-                    TagChip(text: "Lv.\(store.precision.index) \(store.precision.name)",
-                            tint: Theme.accent, filled: true)
-                    Text("连续 \(store.streak) 天")
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(Theme.textFaint)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 7) {
+                    Text(store.learnerLevel.name)
+                        .font(.system(size: 21, weight: .bold))
+                        .foregroundStyle(Theme.text)
+                    TagChip(text: "Lv.\(store.learnerLevel.index)", tint: Theme.accent, filled: true)
                 }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.white.opacity(0.09))
+                        Capsule().fill(Theme.accent)
+                            .frame(width: max(4, geo.size.width * store.xpProgress.progress))
+                    }
+                }
+                .frame(height: 5)
+                .padding(.trailing, 6)
+                Text("\(store.xp) XP · 距 Lv.\(store.learnerLevel.index + 1) 还差 \(store.xpProgress.toNext) · 连续 \(store.streak) 天")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textFaint)
             }
             Spacer()
         }
@@ -146,6 +162,26 @@ struct ProfileView: View {
                      title: "遗忘曲线与复习排期",
                      detail: "平均保持率 \(Int(store.averageRetention() * 100))%") {
                 showCurve = true
+            }
+            entryRow(symbol: "map.fill", tint: Theme.tint("code"),
+                     title: "闯关地图",
+                     detail: "已收 \(store.totalStars)/\(store.maxStars) 星") {
+                showQuest = true
+            }
+            entryRow(symbol: "target", tint: Theme.tint("deep"),
+                     title: "目标计划",
+                     detail: "\(store.goals.filter { store.goalProgress($0).done }.count)/\(store.goals.count) 项达成") {
+                showGoals = true
+            }
+            entryRow(symbol: "chart.bar.doc.horizontal.fill", tint: Theme.tint("struct"),
+                     title: "学习报告",
+                     detail: "本周 \(store.weekReport().sessions) 次 · 正确率 \(Int(store.weekReport().accuracy * 100))%") {
+                showReport = true
+            }
+            entryRow(symbol: "list.number", tint: Theme.tint("seq"),
+                     title: "同级别排名",
+                     detail: "同级第 \(store.myRank().rank)/\(store.myRank().total) 名 · 超过 \(store.myRank().percentile)%") {
+                showRank = true
             }
         }
     }
@@ -286,7 +322,11 @@ struct ProfileView: View {
             .init(title: "宫殿建成", hint: "宫殿关 ≥ 80%", symbol: "building.columns.fill",
                   tint: Theme.tint("space"), unlocked: (store.best[CardKind.palace.rawValue] ?? 0) >= 0.8),
             .init(title: "法有十得", hint: "学满 10 法", symbol: "books.vertical.fill",
-                  tint: Theme.tint("lang"), unlocked: store.learnedMethods.count >= 10)
+                  tint: Theme.tint("lang"), unlocked: store.learnedMethods.count >= 10),
+            .init(title: "摘星十枚", hint: "收满 10 星", symbol: "star.circle.fill",
+                  tint: Theme.accent, unlocked: store.totalStars >= 10),
+            .init(title: "进阶三级", hint: "达到 Lv.3", symbol: "arrow.up.forward.circle.fill",
+                  tint: Theme.tint("seq"), unlocked: store.learnerLevel.index >= 3)
         ]
     }
 

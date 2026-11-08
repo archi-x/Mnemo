@@ -11,9 +11,9 @@ extension AppStore {
         var pool: [ExerciseKind]
 
         switch level {
-        case 1: pool = [.definition, .step, .definition, .step, .definition]
-        case 2: pool = [.material, .pitfall, .step, .material, .pitfall]
-        default: pool = [.apply, .material, .apply, .pitfall]
+        case 1: pool = [.definition, .category, .step, .principle, .definition]
+        case 2: pool = [.material, .pitfall, .order, .caseMatch, .step]
+        default: pool = [.apply, .caseMatch, .order, .material, .apply]
         }
 
         var result: [Exercise] = []
@@ -32,9 +32,58 @@ extension AppStore {
                 result.append(pitfallExercise(method, others))
             case .apply:
                 result.append(applyExercise(method, level: level, variant: i))
+            case .category:
+                result.append(categoryExercise(method))
+            case .principle:
+                result.append(principleExercise(method, others))
+            case .caseMatch:
+                result.append(caseMatchExercise(method, others))
+            case .order:
+                result.append(orderExercise(method, others, index: stepCursor))
+                stepCursor += 1
             }
         }
         return result
+    }
+
+    /// 按学员等级挑题型：低等级多认概念，高等级直接上案例辨析
+    func buildAdaptiveExercises(for method: Method, learnerLevel: Int, count: Int) -> [Exercise] {
+        let kinds2 = preferredKinds(forLearnerLevel: learnerLevel)
+        let others = catalog.methods.filter { $0.id != method.id }
+        var result: [Exercise] = []
+        var stepCursor = 0
+        for (i, kind) in kinds2.enumerated() {
+            if i >= count { break }
+            switch kind {
+            case .definition: result.append(definitionExercise(method, others))
+            case .category: result.append(categoryExercise(method))
+            case .principle: result.append(principleExercise(method, others))
+            case .step:
+                result.append(stepExercise(method, others, index: stepCursor))
+                stepCursor += 1
+            case .material: result.append(materialExercise(method, others))
+            case .pitfall: result.append(pitfallExercise(method, others))
+            case .caseMatch: result.append(caseMatchExercise(method, others))
+            case .order:
+                result.append(orderExercise(method, others, index: stepCursor))
+                stepCursor += 1
+            case .apply: result.append(applyExercise(method, level: 3, variant: i))
+            }
+        }
+        return result
+    }
+
+    func preferredKinds(forLearnerLevel level: Int) -> [ExerciseKind] {
+        let kinds: [ExerciseKind]
+        switch level {
+        case 1: kinds = [.definition, .category, .step]
+        case 2: kinds = [.definition, .category, .step, .principle]
+        case 3: kinds = [.step, .category, .material, .order]
+        case 4: kinds = [.material, .pitfall, .order, .principle]
+        default: kinds = [.caseMatch, .order, .apply, .principle]
+        }
+        // 拉长成 6 题，避免题型过于重复
+        return Array((kinds + kinds).prefix(6))
     }
 
     /// 给当前方法推荐的下一个难度
@@ -134,6 +183,72 @@ extension AppStore {
                         selfCheckHint: "这一题靠自评：真的默写出来了才算「过了」，只是“感觉会”不算。")
     }
 
+    private func categoryExercise(_ m: Method) -> Exercise {
+        let correct = m.categoryName
+        let others = catalog.categories.map(\.name).filter { $0 != correct }
+        let made = makeChoice(correct: correct, distractors: Array(others.shuffled()), limit: 3)
+        return Exercise(kind: .category, level: 1, methodId: m.id,
+                        prompt: "「\(m.name)」属于下面哪一类记忆法？",
+                        options: made.options, answerIndex: made.index,
+                        answerText: correct,
+                        explain: "\(m.name) 归在「\(m.categoryName)」。同类方法之间可以互相替代，跨类通常要组合使用。")
+    }
+
+    private func principleExercise(_ m: Method, _ others: [Method]) -> Exercise {
+        let correct = m.principle
+        var distractors: [String] = []
+        for other in others.shuffled() where distractors.count < 4 {
+            let p = other.principle
+            if p != correct && !distractors.contains(p) { distractors.append(p) }
+        }
+        let made = makeChoice(correct: correct, distractors: distractors, limit: 3)
+        return Exercise(kind: .principle, level: 2, methodId: m.id,
+                        prompt: "「\(m.name)」之所以有效，靠的是什么？",
+                        options: made.options, answerIndex: made.index,
+                        answerText: correct,
+                        explain: "原理：\(m.principle)\n\n同一原理下常配合：\(m.combo)")
+    }
+
+    private func caseMatchExercise(_ m: Method, _ others: [Method]) -> Exercise {
+        let correct = m.name
+        let material: String
+        if !m.caseTitle.isEmpty {
+            material = m.caseTitle + "：" + m.caseLines.prefix(2).joined(separator: " ")
+        } else {
+            material = m.caseLines.prefix(2).joined(separator: " ")
+        }
+        var distractors: [String] = []
+        for other in others.shuffled() where distractors.count < 5 {
+            if !distractors.contains(other.name) { distractors.append(other.name) }
+        }
+        let made = makeChoice(correct: correct, distractors: distractors, limit: 3)
+        return Exercise(kind: .caseMatch, level: 3, methodId: m.id,
+                        prompt: "下面这段记录用的是哪种记忆法？\n「\(material.isEmpty ? m.definition : material)」",
+                        options: made.options, answerIndex: made.index,
+                        answerText: correct,
+                        explain: "\(m.name)：\(m.definition)")
+    }
+
+    private func orderExercise(_ m: Method, _ others: [Method], index: Int) -> Exercise {
+        guard m.steps.count > 1 else { return definitionExercise(m, others) }
+        let pos = index % (m.steps.count - 1)
+        let prev = m.steps[pos]
+        let correct = m.steps[pos + 1]
+        var distractors: [String] = []
+        for other in others.shuffled() where distractors.count < 4 {
+            if let s = other.steps.first(where: { $0 != correct && $0 != prev }),
+               !distractors.contains(s) {
+                distractors.append(s)
+            }
+        }
+        let made = makeChoice(correct: correct, distractors: distractors, limit: 3)
+        return Exercise(kind: .order, level: 2, methodId: m.id,
+                        prompt: "用「\(m.name)」时，做完「\(prev)」之后紧接着要做什么？",
+                        options: made.options, answerIndex: made.index,
+                        answerText: correct,
+                        explain: "完整流程：" + m.steps.joined(separator: " → "))
+    }
+
     private func store_words(_ n: Int) -> [String] {
         randomWords(n)
     }
@@ -160,6 +275,11 @@ extension AppStore {
             let score = outcome.total == 0 ? 0 : Double(outcome.correct) / Double(outcome.total)
             let key = "method-\(mid)-L\(level)"
             if score > (best[key] ?? -1) { best[key] = score }
+
+            // 方法维度的正确率，用于薄弱诊断与报告
+            var stat = methodStats["\(mid)"] ?? DayStat()
+            stat.add(correct: outcome.correct, total: outcome.total, seconds: outcome.seconds)
+            methodStats["\(mid)"] = stat
         }
 
         guard mode == .practice else {
@@ -366,7 +486,32 @@ extension AppStore {
         learnedMethods = [1, 2, 6, 12]
         best["method-6-L1"] = 0.8
         best["method-2-L2"] = 0.6
+        best["method-1-L1"] = 1.0
+        best["method-1-L2"] = 0.9
+        best["method-1-L3"] = 0.85
+        best["method-12-L1"] = 0.9
+        best["method-12-L2"] = 0.75
         completedPlanDays = [1, 2, 3, 4, 5, 6]
+
+        // XP 与逐日经验
+        xp = 640
+        for (offset, ct) in pattern.enumerated() {
+            guard let day = cal.date(byAdding: .day, value: -(pattern.count - offset), to: Date()) else { continue }
+            xpByDay[Self.dayKey(day)] = ct.0 * 2 + 12
+        }
+        xpByDay[Self.dayKey(Date())] = 46
+
+        // 方法维度正确率（含一个明显薄弱项）
+        methodStats["2"] = DayStat(sessions: 2, correct: 3, total: 8, minutes: 4)
+        methodStats["6"] = DayStat(sessions: 3, correct: 8, total: 10, minutes: 6)
+        methodStats["1"] = DayStat(sessions: 2, correct: 9, total: 10, minutes: 5)
+        methodStats["12"] = DayStat(sessions: 1, correct: 4, total: 6, minutes: 3)
+        methodStats["21"] = DayStat(sessions: 1, correct: 2, total: 5, minutes: 3)
+
+        goals = [Goal(kind: .dailySessions, target: 3),
+                 Goal(kind: .weeklySessions, target: 15),
+                 Goal(kind: .streak, target: 7),
+                 Goal(kind: .stars, target: 30)]
         persist()
     }
 }

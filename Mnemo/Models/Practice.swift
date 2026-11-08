@@ -8,6 +8,10 @@ enum ExerciseKind: String, Codable, CaseIterable {
     case material     // 材料适配：什么材料适合 / 不适合
     case pitfall      // 流程排除：哪一步不属于该方法
     case apply        // 应用编码：给真实材料，自评编码质量
+    case category     // 方法归类：属于七大类里的哪一类
+    case principle    // 原理溯源：为什么有效
+    case caseMatch    // 案例归属：给案例判断用了哪种方法
+    case order        // 步骤衔接：下一步做什么
 
     var title: String {
         switch self {
@@ -16,6 +20,10 @@ enum ExerciseKind: String, Codable, CaseIterable {
         case .material: return "材料适配"
         case .pitfall: return "流程排除"
         case .apply: return "应用编码"
+        case .category: return "方法归类"
+        case .principle: return "原理溯源"
+        case .caseMatch: return "案例归属"
+        case .order: return "步骤衔接"
         }
     }
 
@@ -26,6 +34,10 @@ enum ExerciseKind: String, Codable, CaseIterable {
         case .material: return "shippingbox"
         case .pitfall: return "exclamationmark.triangle"
         case .apply: return "pencil.and.outline"
+        case .category: return "square.grid.2x2"
+        case .principle: return "lightbulb"
+        case .caseMatch: return "text.magnifyingglass"
+        case .order: return "arrow.right.to.line"
         }
     }
 

@@ -7,9 +7,17 @@ struct MethodPracticeView: View {
 
     let method: Method
 
-    @State private var level = 1
+    @State private var level: Int
     @State private var exercises: [Exercise] = []
     @State private var started = false
+
+    init(method: Method, initialLevel: Int? = nil) {
+        self.method = method
+        _level = State(initialValue: initialLevel ?? MethodPracticeView.suggested(method: method))
+    }
+
+    /// 没传等级时按方法自身掌握度给个起点
+    private static func suggested(method: Method) -> Int { 1 }
 
     private var tint: Color { Theme.tint(method.categoryId) }
 
@@ -72,14 +80,14 @@ struct MethodPracticeView: View {
 
                 VStack(spacing: 10) {
                     levelRow(1, "初阶 · 认得它",
-                             detail: "概念配对 + 步骤定位：把方法和它的定义、流程对上号",
-                             kinds: "概念配对 · 步骤定位")
+                             detail: "把方法和它的定义、类别、流程对上号",
+                             kinds: "概念配对 · 方法归类 · 步骤定位")
                     levelRow(2, "中阶 · 分得清",
-                             detail: "材料适配 + 流程排除：知道什么该用、什么不该用",
-                             kinds: "材料适配 · 流程排除")
+                             detail: "知道什么该用、什么不该用，步骤顺序不串",
+                             kinds: "材料适配 · 流程排除 · 步骤衔接 · 原理溯源")
                     levelRow(3, "高阶 · 用得上",
-                             detail: "给真实材料，现场编码并默写，自评是否过关",
-                             kinds: "应用编码 · 材料适配")
+                             detail: "看案例认方法，给真实材料现场编码并默写",
+                             kinds: "案例归属 · 应用编码 · 流程排除")
                 }
 
                 if let bestScore {

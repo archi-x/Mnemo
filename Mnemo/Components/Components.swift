@@ -208,3 +208,47 @@ struct EmptyHint: View {
         .padding(.vertical, 26)
     }
 }
+
+
+// MARK: - 入口行
+
+struct EntryRow: View {
+    let symbol: String
+    var tint: Color = Theme.accent
+    let title: String
+    let detail: String
+    var trailing: String? = nil
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            Haptic.tap()
+            action()
+        } label: {
+            HStack(spacing: 12) {
+                IconBadge(symbol: symbol, tint: tint, size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 13.5, weight: .semibold))
+                        .foregroundStyle(Theme.text)
+                    Text(detail)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(Theme.textSub)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                if let trailing {
+                    Text(trailing)
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(tint)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Theme.textFaint)
+            }
+            .padding(13)
+            .glass(radius: 16)
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}

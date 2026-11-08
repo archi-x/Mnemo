@@ -7,6 +7,7 @@ struct TodayView: View {
     @State private var showReview = false
     @State private var showWordFlash = false
     @State private var showWrongBook = false
+    @State private var practiceRec: Recommendation?
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -32,6 +33,7 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
                     goalCard
+                    smartCard
                     reviewCard
                     if !store.wrongItems.isEmpty { wrongCard }
                     planCard
@@ -53,6 +55,12 @@ struct TodayView: View {
             }
             .fullScreenCover(isPresented: $showWrongBook) {
                 WrongBookView()
+            }
+            .sheet(item: $practiceRec) { rec in
+                if let id = rec.methodId, let m = store.method(id) {
+                    MethodPracticeView(method: m, initialLevel: rec.level)
+                        .environmentObject(store)
+                }
             }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
@@ -140,6 +148,93 @@ struct TodayView: View {
                         .strokeBorder(Theme.accent.opacity(0.22), lineWidth: 1)
                 )
         )
+    }
+
+    private var smartCard: some View {
+        let recs = Array(store.recommendations(limit: 3))
+        return VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.accent)
+                Text("按 Lv.\(store.learnerLevel.index) 推荐")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textSub)
+                Spacer()
+                Text("\(store.weekXP) XP · 距下一级 \(store.xpProgress.toNext)")
+                    .font(.system(size: 10.5, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textFaint)
+            }
+
+            if recs.isEmpty {
+                Text("先随便练一关，系统会开始按你的正确率和错题给建议。")
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Theme.textFaint)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glass(radius: 16)
+            } else {
+                ForEach(recs) { rec in
+                    Button {
+                        open(rec)
+                    } label: {
+                        HStack(spacing: 11) {
+                            IconBadge(symbol: rec.kind.symbol,
+                                      tint: recTint(rec), size: 34)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 5) {
+                                    Text(rec.kind.label)
+                                        .font(.system(size: 9.5, weight: .bold))
+                                        .foregroundStyle(recTint(rec))
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 1.5)
+                                        .background(Capsule().fill(recTint(rec).opacity(0.14)))
+                                    Text(rec.title)
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Theme.text)
+                                        .lineLimit(1)
+                                }
+                                Text(rec.reason)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(Theme.textFaint)
+                                    .lineLimit(1)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Theme.textFaint)
+                        }
+                        .padding(12)
+                        .glass(radius: 16)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+        }
+    }
+
+    private func recTint(_ rec: Recommendation) -> Color {
+        switch rec.kind {
+        case .wrong: return Theme.tint("review")
+        case .review: return Theme.accent
+        case .weak: return Theme.danger
+        case .star: return Theme.accent
+        case .fresh: return Theme.tint("space")
+        case .levelUp: return Theme.tint("deep")
+        }
+    }
+
+    private func open(_ rec: Recommendation) {
+        Haptic.tap(.medium)
+        switch rec.kind {
+        case .wrong:
+            showWrongBook = true
+        case .review:
+            showReview = true
+        default:
+            practiceRec = rec
+        }
     }
 
     private var reviewCard: some View {

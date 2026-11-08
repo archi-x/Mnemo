@@ -13,6 +13,11 @@ final class AppStore: ObservableObject {
     @Published var completedPlanDays: Set<Int> = []
     @Published var wrongItems: [WrongItem] = []
     @Published var dayStats: [String: DayStat] = [:]
+    @Published var xp: Int = 0
+    @Published var xpByDay: [String: Int] = [:]
+    @Published var goals: [Goal] = []
+    @Published var methodStats: [String: DayStat] = [:]
+    @Published var pendingLevelUp: Int?
     @Published var snapshotVersion = 0
 
     private var saveTask: Task<Void, Never>?
@@ -21,6 +26,7 @@ final class AppStore: ObservableObject {
         catalog = Self.loadCatalog()
         words = Self.loadWords()
         load()
+        seedDefaultGoals()
     }
 
     // MARK: 内容加载
@@ -120,11 +126,19 @@ final class AppStore: ObservableObject {
         var stat = dayStats[key] ?? DayStat()
         stat.add(correct: correct, total: total, seconds: seconds)
         dayStats[key] = stat
+
+        // 经验：答对 2 XP/题，整组完成 +6，正确率 ≥ 90% 再 +6
+        let score = total == 0 ? 0 : Double(correct) / Double(total)
+        var gained = correct * 2
+        if total > 0 { gained += 6 }
+        if score >= 0.9 && total >= 3 { gained += 6 }
+        addXP(gained)
     }
 
     func grade(cardID: String, quality: Int) {
         guard let idx = cards.firstIndex(where: { $0.id == cardID }) else { return }
         cards[idx].grade(quality)
+        addXP(quality >= 4 ? 4 : 1)
         let key = Self.dayKey(Date())
         if stats.lastDay != key {
             stats.lastDay = key
@@ -157,7 +171,13 @@ final class AppStore: ObservableObject {
         completedPlanDays = []
         wrongItems = []
         dayStats = [:]
+        xp = 0
+        xpByDay = [:]
+        methodStats = [:]
+        goals = []
+        pendingLevelUp = nil
         persist()
+        seedDefaultGoals()
     }
 
     // MARK: 持久化
@@ -171,14 +191,21 @@ final class AppStore: ObservableObject {
         var completedPlanDays: [Int]
         var wrongItems: [WrongItem]
         var dayStats: [String: DayStat]
+        var xp: Int
+        var xpByDay: [String: Int]
+        var goals: [Goal]
+        var methodStats: [String: DayStat]
 
         enum CodingKeys: String, CodingKey {
             case cards, stats, best, records, learnedMethods, completedPlanDays, wrongItems, dayStats
+            case xp, xpByDay, goals, methodStats
         }
 
         init(cards: [ReviewCard], stats: Stats, best: [String: Double], records: [DrillRecord],
              learnedMethods: [Int], completedPlanDays: [Int],
-             wrongItems: [WrongItem], dayStats: [String: DayStat]) {
+             wrongItems: [WrongItem], dayStats: [String: DayStat],
+             xp: Int, xpByDay: [String: Int], goals: [Goal],
+             methodStats: [String: DayStat]) {
             self.cards = cards
             self.stats = stats
             self.best = best
@@ -187,6 +214,10 @@ final class AppStore: ObservableObject {
             self.completedPlanDays = completedPlanDays
             self.wrongItems = wrongItems
             self.dayStats = dayStats
+            self.xp = xp
+            self.xpByDay = xpByDay
+            self.goals = goals
+            self.methodStats = methodStats
         }
 
         /// 兼容旧版本存档：缺字段时用空值补齐
@@ -200,6 +231,10 @@ final class AppStore: ObservableObject {
             completedPlanDays = try c.decodeIfPresent([Int].self, forKey: .completedPlanDays) ?? []
             wrongItems = try c.decodeIfPresent([WrongItem].self, forKey: .wrongItems) ?? []
             dayStats = try c.decodeIfPresent([String: DayStat].self, forKey: .dayStats) ?? [:]
+            xp = try c.decodeIfPresent(Int.self, forKey: .xp) ?? 0
+            xpByDay = try c.decodeIfPresent([String: Int].self, forKey: .xpByDay) ?? [:]
+            goals = try c.decodeIfPresent([Goal].self, forKey: .goals) ?? []
+            methodStats = try c.decodeIfPresent([String: DayStat].self, forKey: .methodStats) ?? [:]
         }
     }
 
@@ -219,6 +254,10 @@ final class AppStore: ObservableObject {
         completedPlanDays = Set(snap.completedPlanDays)
         wrongItems = snap.wrongItems
         dayStats = snap.dayStats
+        xp = snap.xp
+        xpByDay = snap.xpByDay
+        goals = snap.goals
+        methodStats = snap.methodStats
     }
 
     func persist() {
@@ -226,7 +265,9 @@ final class AppStore: ObservableObject {
                             learnedMethods: Array(learnedMethods),
                             completedPlanDays: Array(completedPlanDays),
                             wrongItems: wrongItems,
-                            dayStats: dayStats)
+                            dayStats: dayStats,
+                            xp: xp, xpByDay: xpByDay, goals: goals,
+                            methodStats: methodStats)
         let url = fileURL
         saveTask?.cancel()
         saveTask = Task.detached(priority: .background) {
