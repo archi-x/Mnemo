@@ -32,9 +32,18 @@ enum RootTab: Int, CaseIterable, Identifiable {
     }
 }
 
+/// 调试直达：-game <stage> <node> <level>
+struct DevGameLaunch: Identifiable {
+    let stage: SchoolStage
+    let node: StageNodeSpec
+    let level: Int
+    var id: String { "\(stage.rawValue)-\(node.index)-L\(level)" }
+}
+
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @State private var tab: RootTab
+    @State private var devGame: DevGameLaunch?
 
     init() {
         let args = ProcessInfo.processInfo.arguments
@@ -75,6 +84,14 @@ struct RootView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             TabBar(tab: $tab)
         }
+        .fullScreenCover(item: $devGame) { launch in
+            devGameView(launch)
+        }
+        .onAppear(perform: launchDevGameIfNeeded)
+        .fullScreenCover(item: $devGame) { launch in
+            devGameView(launch)
+        }
+        .onAppear(perform: launchDevGameIfNeeded)
     }
 }
 
@@ -192,3 +209,39 @@ private struct LevelUpToast: View {
         }
     }
 }
+
+
+extension RootView {
+    private func launchDevGameIfNeeded() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-game"), i + 3 < args.count,
+              let stage = SchoolStage(rawValue: args[i + 1]),
+              let nodeIdx = Int(args[i + 2]),
+              let level = Int(args[i + 3]) else { return }
+        let nodes = QuestBank.nodes(for: stage)
+        guard nodes.indices.contains(nodeIdx) else { return }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            devGame = DevGameLaunch(stage: stage, node: nodes[nodeIdx], level: level)
+        }
+    }
+
+    @ViewBuilder
+    private func devGameView(_ launch: DevGameLaunch) -> some View {
+        switch launch.stage.gameKind {
+        case .flipMatch:
+            FlipMatchView(stage: launch.stage, node: launch.node, level: launch.level)
+                .environmentObject(store)
+        case .orderSteps:
+            OrderStepsView(stage: launch.stage, node: launch.node, level: launch.level)
+                .environmentObject(store)
+        case .rushQuiz:
+            RushQuizView(stage: launch.stage, node: launch.node, level: launch.level)
+                .environmentObject(store)
+        case .encodeLab:
+            EncodeLabView(stage: launch.stage, node: launch.node, level: launch.level)
+                .environmentObject(store)
+        }
+    }
+}
+

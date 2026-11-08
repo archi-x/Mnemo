@@ -89,29 +89,6 @@ extension LearnerLevel {
     }
 }
 
-// MARK: - 闯关星图
-
-struct QuestChapter: Identifiable, Hashable {
-    let id: String
-    let name: String
-    let icon: String
-    let methods: [Method]
-    let unlocked: Bool
-    let stars: Int
-    let maxStars: Int
-}
-
-struct QuestNode: Identifiable, Hashable {
-    let method: Method
-    let index: Int
-    let stars: Int
-    let unlocked: Bool
-    let bestScore: Double
-
-    var id: Int { method.id }
-    var cleared: Bool { stars > 0 }
-}
-
 // MARK: - 智能推荐
 
 struct Recommendation: Identifiable, Hashable {

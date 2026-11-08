@@ -165,7 +165,7 @@ struct ProfileView: View {
             }
             entryRow(symbol: "map.fill", tint: Theme.tint("code"),
                      title: "闯关地图",
-                     detail: "已收 \(store.totalStars)/\(store.maxStars) 星") {
+                     detail: "四学龄段 · 已收 \(store.totalStars)/\(store.maxStars) 星") {
                 showQuest = true
             }
             entryRow(symbol: "target", tint: Theme.tint("deep"),

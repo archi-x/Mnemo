@@ -17,6 +17,7 @@ final class AppStore: ObservableObject {
     @Published var xpByDay: [String: Int] = [:]
     @Published var goals: [Goal] = []
     @Published var methodStats: [String: DayStat] = [:]
+    @Published var questStars: [String: Int] = [:]
     @Published var pendingLevelUp: Int?
     @Published var snapshotVersion = 0
 
@@ -195,17 +196,18 @@ final class AppStore: ObservableObject {
         var xpByDay: [String: Int]
         var goals: [Goal]
         var methodStats: [String: DayStat]
+        var questStars: [String: Int]
 
         enum CodingKeys: String, CodingKey {
             case cards, stats, best, records, learnedMethods, completedPlanDays, wrongItems, dayStats
-            case xp, xpByDay, goals, methodStats
+            case xp, xpByDay, goals, methodStats, questStars
         }
 
         init(cards: [ReviewCard], stats: Stats, best: [String: Double], records: [DrillRecord],
              learnedMethods: [Int], completedPlanDays: [Int],
              wrongItems: [WrongItem], dayStats: [String: DayStat],
              xp: Int, xpByDay: [String: Int], goals: [Goal],
-             methodStats: [String: DayStat]) {
+             methodStats: [String: DayStat], questStars: [String: Int]) {
             self.cards = cards
             self.stats = stats
             self.best = best
@@ -218,6 +220,7 @@ final class AppStore: ObservableObject {
             self.xpByDay = xpByDay
             self.goals = goals
             self.methodStats = methodStats
+            self.questStars = questStars
         }
 
         /// 兼容旧版本存档：缺字段时用空值补齐
@@ -235,6 +238,7 @@ final class AppStore: ObservableObject {
             xpByDay = try c.decodeIfPresent([String: Int].self, forKey: .xpByDay) ?? [:]
             goals = try c.decodeIfPresent([Goal].self, forKey: .goals) ?? []
             methodStats = try c.decodeIfPresent([String: DayStat].self, forKey: .methodStats) ?? [:]
+            questStars = try c.decodeIfPresent([String: Int].self, forKey: .questStars) ?? [:]
         }
     }
 
@@ -258,6 +262,7 @@ final class AppStore: ObservableObject {
         xpByDay = snap.xpByDay
         goals = snap.goals
         methodStats = snap.methodStats
+        questStars = snap.questStars
     }
 
     func persist() {
@@ -267,7 +272,8 @@ final class AppStore: ObservableObject {
                             wrongItems: wrongItems,
                             dayStats: dayStats,
                             xp: xp, xpByDay: xpByDay, goals: goals,
-                            methodStats: methodStats)
+                            methodStats: methodStats,
+                            questStars: questStars)
         let url = fileURL
         saveTask?.cancel()
         saveTask = Task.detached(priority: .background) {

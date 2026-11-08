@@ -43,11 +43,10 @@ extension AppStore {
         }
     }
 
-    var totalStars: Int {
-        catalog.methods.reduce(0) { $0 + stars(for: $1.id) }
-    }
+    /// 统一口径：星数按分学龄段闯关计
+    var totalStars: Int { questTotalStars }
 
-    var maxStars: Int { catalog.methods.count * 3 }
+    var maxStars: Int { questMaxStars }
 
     /// 方法本身的掌握阶数（0–3），用于推荐难度
     func methodLevel(_ methodId: Int) -> Int {
@@ -55,49 +54,6 @@ extension AppStore {
         for l in 1...3 where (best["method-\(methodId)-L\(l)"] ?? 0) >= 0.6 { lv = l }
         if lv == 0 && learnedMethods.contains(methodId) { lv = 1 }
         return lv
-    }
-
-    func questChapters() -> [QuestChapter] {
-        catalog.categories.map { cat in
-            let methods = catalog.methods
-                .filter { $0.categoryId == cat.id }
-                .sorted { $0.id < $1.id }
-            var unlockedIDs: Set<Int> = []
-            var prevStars = 1
-            for m in methods {
-                if prevStars >= 1 { unlockedIDs.insert(m.id) }
-                prevStars = stars(for: m.id)
-            }
-            let starsSum = methods.reduce(0) { $0 + stars(for: $1.id) }
-            return QuestChapter(id: cat.id, name: cat.name, icon: cat.icon,
-                                methods: methods,
-                                unlocked: methods.first.map { unlockedIDs.contains($0.id) } ?? false,
-                                stars: starsSum, maxStars: methods.count * 3)
-        }
-    }
-
-    func questNodes(in chapter: QuestChapter) -> [QuestNode] {
-        let ordered = chapter.methods.sorted { $0.id < $1.id }
-        var nodes: [QuestNode] = []
-        var prevStars = 1
-        for (i, m) in ordered.enumerated() {
-            let s = stars(for: m.id)
-            nodes.append(QuestNode(method: m, index: i + 1, stars: s,
-                                   unlocked: prevStars >= 1,
-                                   bestScore: best["method-\(m.id)-L3"] ?? best["method-\(m.id)-L1"] ?? 0))
-            prevStars = s
-        }
-        return nodes
-    }
-
-    /// 下一个可以打的关（用于「继续闯关」）
-    func nextQuest() -> (chapter: QuestChapter, node: QuestNode)? {
-        for chapter in questChapters() {
-            for node in questNodes(in: chapter) where node.unlocked && !node.cleared {
-                return (chapter, node)
-            }
-        }
-        return nil
     }
 
     // MARK: 智能推荐
@@ -178,9 +134,9 @@ extension AppStore {
                 id: "levelup", kind: .levelUp,
                 title: "再拿 \(toNext) XP 升级",
                 reason: "Lv.\(learner) → Lv.\(learner + 1)，挑一关稳的刷",
-                methodId: nextQuest()?.node.method.id,
+                methodId: catalog.methods.randomElement()?.id,
                 level: min(3, max(1, learnerLevel.startLevel)),
-                categoryId: nextQuest()?.node.method.categoryId ?? "code",
+                categoryId: catalog.methods.randomElement()?.categoryId ?? "code",
                 priority: 55))
         }
 

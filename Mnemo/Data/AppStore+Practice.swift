@@ -508,6 +508,15 @@ extension AppStore {
         methodStats["12"] = DayStat(sessions: 1, correct: 4, total: 6, minutes: 3)
         methodStats["21"] = DayStat(sessions: 1, correct: 2, total: 5, minutes: 3)
 
+        // 闯关演示：低年级前两关、初中第一关各拿几颗星
+        questStars["q-primaryLow-0-L1"] = 100
+        questStars["q-primaryLow-0-L2"] = 85
+        questStars["q-primaryLow-1-L1"] = 92
+        questStars["q-primaryHigh-0-L1"] = 88
+        questStars["q-junior-0-L1"] = 83
+        questStars["q-junior-0-L2"] = 75
+        questStars["q-senior-0-L1"] = 100
+
         goals = [Goal(kind: .dailySessions, target: 3),
                  Goal(kind: .weeklySessions, target: 15),
                  Goal(kind: .streak, target: 7),

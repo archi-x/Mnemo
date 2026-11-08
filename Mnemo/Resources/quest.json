@@ -1,0 +1,100 @@
+{
+  "kid": [
+    {"theme": "可爱的动物", "emoji": "🐾", "pairs": [["小猫", "🐱"], ["小狗", "🐶"], ["兔子", "🐰"], ["大象", "🐘"], ["老虎", "🐯"]]},
+    {"theme": "好吃的水果", "emoji": "🍎", "pairs": [["苹果", "🍎"], ["香蕉", "🍌"], ["葡萄", "🍇"], ["西瓜", "🍉"], ["草莓", "🍓"]]},
+    {"theme": "我的文具", "emoji": "✏️", "pairs": [["铅笔", "✏️"], ["课本", "📚"], ["剪刀", "✂️"], ["尺子", "📏"], ["书包", "🎒"]]},
+    {"theme": "天上的东西", "emoji": "🌤", "pairs": [["太阳", "☀️"], ["月亮", "🌙"], ["星星", "⭐️"], ["彩虹", "🌈"], ["云朵", "☁️"]]},
+    {"theme": "出行工具", "emoji": "🚗", "pairs": [["汽车", "🚗"], ["飞机", "✈️"], ["火车", "🚄"], ["轮船", "🚢"], ["自行车", "🚲"]]},
+    {"theme": "今天吃什么", "emoji": "🍜", "pairs": [["面条", "🍜"], ["米饭", "🍚"], ["面包", "🍞"], ["蛋糕", "🍰"], ["冰淇淋", "🍦"]]},
+    {"theme": "我的身体", "emoji": "🖐", "pairs": [["眼睛", "👀"], ["耳朵", "👂"], ["鼻子", "👃"], ["嘴巴", "👄"], ["手", "✋"]]},
+    {"theme": "天气变化", "emoji": "🌦", "pairs": [["下雨", "🌧"], ["下雪", "❄️"], ["打雷", "⚡️"], ["刮风", "🌬"], ["晴天", "🌞"]]},
+    {"theme": "家里的东西", "emoji": "🏠", "pairs": [["小床", "🛏"], ["椅子", "🪑"], ["台灯", "💡"], ["电视", "📺"], ["钥匙", "🔑"]]},
+    {"theme": "会响的乐器", "emoji": "🎵", "pairs": [["钢琴", "🎹"], ["吉他", "🎸"], ["小鼓", "🥁"], ["喇叭", "🎺"], ["小提琴", "🎻"]]},
+    {"theme": "一起运动", "emoji": "⚽️", "pairs": [["足球", "⚽️"], ["篮球", "🏀"], ["游泳", "🏊"], ["跑步", "🏃"], ["跳绳", "🪀"]]},
+    {"theme": "学校里的事", "emoji": "🏫", "pairs": [["老师", "👩‍🏫"], ["同学", "👦"], ["黑板", "📋"], ["上课铃", "🔔"], ["操场", "🏟"]]}
+  ],
+  "order": [
+    {"methodId": 6, "emoji": "🚪"},
+    {"methodId": 11, "emoji": "🔢"},
+    {"methodId": 1, "emoji": "🖼"},
+    {"methodId": 3, "emoji": "🧵"},
+    {"methodId": 20, "emoji": "🎵"},
+    {"methodId": 21, "emoji": "🧱"},
+    {"methodId": 22, "emoji": "🗂"},
+    {"methodId": 23, "emoji": "🌳"},
+    {"methodId": 24, "emoji": "🕸"},
+    {"methodId": 35, "emoji": "🙈"},
+    {"methodId": 36, "emoji": "🃏"},
+    {"methodId": 37, "emoji": "⏳"}
+  ],
+  "rush": [
+    {"theme": "编码基础", "emoji": "🧩", "methodIds": [1, 2, 3, 4, 5]},
+    {"theme": "空间位置", "emoji": "🏠", "methodIds": [6, 7, 8, 9, 10]},
+    {"theme": "数字字母", "emoji": "🔢", "methodIds": [11, 12, 13, 14, 15]},
+    {"theme": "语言转化", "emoji": "🔤", "methodIds": [16, 17, 18, 19, 20]},
+    {"theme": "结构梳理", "emoji": "🗂", "methodIds": [21, 22, 23, 24, 25, 26, 27]},
+    {"theme": "深度加工", "emoji": "💡", "methodIds": [28, 29, 30, 31, 32, 33, 34]},
+    {"theme": "复习提取", "emoji": "🔁", "methodIds": [35, 36, 37, 38, 39, 40]},
+    {"theme": "背单词", "emoji": "📖", "methodIds": [16, 17, 18, 19, 20]},
+    {"theme": "背课文", "emoji": "📜", "methodIds": [1, 3, 20, 21, 23]},
+    {"theme": "记公式", "emoji": "📐", "methodIds": [11, 12, 20, 21, 25]},
+    {"theme": "考前冲刺", "emoji": "⏰", "methodIds": [35, 36, 37, 38, 39, 40]},
+    {"theme": "综合挑战", "emoji": "🏆", "methodIds": [1, 2, 6, 11, 16, 21, 24, 30, 35, 37]}
+  ],
+  "lab": [
+    {"subject": "语文", "emoji": "📖", "items": [
+      {"material": "《岳阳楼记》名句：先天下之忧而忧", "methodId": 1},
+      {"material": "唐宋八大家名单（8 人）", "methodId": 20},
+      {"material": "《赤壁赋》整段背诵", "methodId": 3},
+      {"material": "《出师表》三条建议", "methodId": 23}
+    ]},
+    {"subject": "英语", "emoji": "🔤", "items": [
+      {"material": "abandon v. 放弃、抛弃", "methodId": 17},
+      {"material": "ambitious adj. 野心勃勃的", "methodId": 16},
+      {"material": "词根 spect / vis / port 各 6 词", "methodId": 22},
+      {"material": "虚拟语气三种时态规则", "methodId": 25}
+    ]},
+    {"subject": "历史", "emoji": "🏛", "items": [
+      {"material": "秦灭六国顺序：韩赵魏楚燕齐", "methodId": 19},
+      {"material": "唐朝由盛转衰的四个阶段", "methodId": 15},
+      {"material": "《南京条约》五项内容", "methodId": 20},
+      {"material": "工业革命的四类影响", "methodId": 22}
+    ]},
+    {"subject": "化学", "emoji": "⚗️", "items": [
+      {"material": "金属活动性顺序：钾钙钠镁铝…", "methodId": 20},
+      {"material": "元素周期表前 20 号元素", "methodId": 21},
+      {"material": "氧化还原反应配平步骤", "methodId": 26},
+      {"material": "常见沉淀的颜色与化学式", "methodId": 25}
+    ]},
+    {"subject": "生物", "emoji": "🧬", "items": [
+      {"material": "细胞呼吸三个阶段及产物", "methodId": 3},
+      {"material": "人体八大系统及主要器官", "methodId": 22},
+      {"material": "DNA 复制的过程与酶", "methodId": 26},
+      {"material": "光合作用色素与吸收光谱", "methodId": 24}
+    ]},
+    {"subject": "地理", "emoji": "🌍", "items": [
+      {"material": "中国 34 个省级行政区", "methodId": 21},
+      {"material": "长江自西向东流经的省份", "methodId": 7},
+      {"material": "三种季风气候的成因", "methodId": 33},
+      {"material": "世界主要洋流的分布规律", "methodId": 25}
+    ]},
+    {"subject": "数学", "emoji": "📐", "items": [
+      {"material": "三角恒等式：sin²+cos²=1 等", "methodId": 20},
+      {"material": "立体几何辅助线的常见套路", "methodId": 26},
+      {"material": "导数与积分基本公式表", "methodId": 25},
+      {"material": "函数单调性、奇偶性、周期性", "methodId": 33}
+    ]},
+    {"subject": "物理", "emoji": "⚛️", "items": [
+      {"material": "牛顿三大定律的表述", "methodId": 19},
+      {"material": "电磁感应产生的两个条件", "methodId": 34},
+      {"material": "复杂电路的分析步骤", "methodId": 26},
+      {"material": "力学单位与换算关系", "methodId": 21}
+    ]},
+    {"subject": "综合", "emoji": "🎯", "items": [
+      {"material": "三天内背完 120 个新单词", "methodId": 37},
+      {"material": "一节课后要复述整章内容", "methodId": 23},
+      {"material": "把笔记整理成一页纸", "methodId": 24},
+      {"material": "考前 5 天混科复习", "methodId": 38}
+    ]}
+  ]
+}

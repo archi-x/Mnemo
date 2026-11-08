@@ -114,7 +114,7 @@ struct DrillHubView: View {
             SectionHeader(title: "进阶玩法")
             EntryRow(symbol: "map.fill", tint: Theme.tint("code"),
                      title: "闯关地图",
-                     detail: "七章 40 关，拿星解锁下一关",
+                     detail: "四学龄段 · 48 关 · 四种玩法",
                      trailing: "\(store.totalStars)/\(store.maxStars) 星") {
                 showQuest = true
             }

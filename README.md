@@ -12,7 +12,7 @@
 - **学员等级 XP 体系**：答题得经验、升级换称号，题型推荐随等级自适应
 - **智能推荐**：错题优先 → 到期复习 → 薄弱补练 → 冲星 → 开新法，按优先级排好
 - **错题本 + 强化训练**：答错自动入库，重做答对两次出库，反复错的题优先
-- **闯关地图**：七章 40 关，每关三星（各阶 ≥ 80%），拿星解锁下一关
+- **分学龄段闯关**：小学低年级翻翻配对 / 小学高年级排排队 / 初中限时抢答 / 高中编码工坊，45 关 × 三档，拿星解锁
 - **目标计划**：每日/每周训练量、连续打卡、收星、正确率六类目标，可增删
 - **学习报告**：本周 vs 上周、14 天训练量、正确率趋势、类别强弱、该补的方法
 - **同级别排名**：离线模拟的同级参照榜（不上传任何数据）
@@ -30,9 +30,15 @@
 | --- | --- | --- | --- |
 | ![](Docs/screenshots/quiz.png) | ![](Docs/screenshots/wrongbook.png) | ![](Docs/screenshots/calendar.png) | ![](Docs/screenshots/curve.png) |
 
-| 闯关地图 | 目标计划 | 学习报告 | 同级别排名 |
+| 目标计划 | 学习报告 | 同级别排名 | 闯关结算 |
 | --- | --- | --- | --- |
-| ![](Docs/screenshots/quest.png) | ![](Docs/screenshots/goals.png) | ![](Docs/screenshots/report.png) | ![](Docs/screenshots/rank.png) |
+| ![](Docs/screenshots/goals.png) | ![](Docs/screenshots/report.png) | ![](Docs/screenshots/rank.png) | ![](Docs/screenshots/quest_result.png) |
+
+### 闯关：四个学龄段四套玩法
+
+| 闯关地图 | 小学低年级 · 翻翻配对 | 小学高年级 · 排排队 | 初中 · 限时抢答 | 高中 · 编码工坊 |
+| --- | --- | --- | --- | --- |
+| ![](Docs/screenshots/quest_hub.png) | ![](Docs/screenshots/quest_flip.png) | ![](Docs/screenshots/quest_order.png) | ![](Docs/screenshots/quest_rush.png) | ![](Docs/screenshots/quest_lab.png) |
 
 ## 打开与运行
 
