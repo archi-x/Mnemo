@@ -1,6 +1,5 @@
 # 忆境 Mnemo
 
-[![Build](https://github.com/archi-x/Mnemo/actions/workflows/build.yml/badge.svg)](https://github.com/archi-x/Mnemo/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/iOS-18.0%2B-blue)
 
@@ -72,20 +71,26 @@ Mnemo/
 │   ├── Design/Theme.swift      视觉语言（颜色/卡片/触感）
 │   ├── Models/
 │   │   ├── Models.swift        方法/复习卡/统计/精度等级
-│   │   └── Practice.swift      题型/错题/每日统计/复习阶梯
+│   │   ├── Practice.swift      九种题型/错题/每日统计/复习阶梯
+│   │   ├── Game.swift          等级 XP/目标/推荐
+│   │   └── Quest.swift         学龄段/关卡规格/四种玩法
 │   ├── Data/
 │   │   ├── AppStore.swift      状态与持久化、SM-2、出词
-│   │   └── AppStore+Practice.swift  出题引擎、错题结算、保持率
-│   ├── Views/                  四 Tab + 关卡 + 练习/错题/日历/曲线
+│   │   ├── AppStore+Practice.swift  出题引擎、错题结算、保持率
+│   │   ├── AppStore+Game.swift      XP 结算、推荐、报告、排名
+│   │   ├── AppStore+Quest.swift     闯关记星与解锁
+│   │   └── QuestBank.swift     分学龄段题库组装
+│   ├── Views/                  四 Tab + 15 个功能页 + 闯关四玩法
 │   ├── Components/             进度环/按钮/胶囊等通用件
 │   ├── Resources/
 │   │   ├── methods.json        40 法知识库（Scripts/extract.py 生成）
-│   │   └── words.json          训练词库 110 词
+│   │   ├── words.json          训练词库 110 词
+│   │   └── quest.json          闯关题库（12 主题/12 方法/9 学科）
 │   └── Assets.xcassets         App 图标
 ├── Scripts/extract.py          文档 → JSON 抽取脚本（可重复运行）
 └── Docs/
     ├── 记忆训练文档整理报告.md   文档整理结果
-    ├── DESIGN.md               UI 与交互设计（含 v2 新功能）
+    ├── DESIGN.md               UI 与交互设计（v1→v4）
     └── screenshots/            各页面截图
 ```
 
