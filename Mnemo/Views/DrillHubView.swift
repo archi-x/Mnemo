@@ -31,7 +31,7 @@ struct DrillHubView: View {
 
                     LazyVGrid(columns: [GridItem(.flexible(), spacing: 12),
                                         GridItem(.flexible(), spacing: 12)], spacing: 12) {
-                        DrillCard(title: "词表闪记", subtitle: "联想 · 故事链", symbol: "text.word.spacing",
+                        DrillCard(title: "词表闪记", subtitle: "联想 · 限时回忆", symbol: "text.word.spacing",
                                   tint: Theme.tint("code"), best: store.best[CardKind.word.rawValue]) {
                             showWordFlash = true
                         }

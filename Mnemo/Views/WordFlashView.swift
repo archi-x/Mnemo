@@ -47,11 +47,30 @@ struct WordFlashView: View {
     @State private var matched: [Bool] = []
     @State private var startedAt = Date()
     @State private var timerTask: Task<Void, Never>?
+    @State private var recallTask: Task<Void, Never>?
     @FocusState private var focused: Bool
     @State private var count = 10
 
+    // 回忆倒计时（随词数伸缩）
+    @State private var recallLeft = 0
+    @State private var timedOut = false
+    @State private var usedSeconds = 0
+    @State private var wordDrain: Double = 1
+
     private var correct: Int { matched.filter { $0 }.count }
     private var score: Double { words.isEmpty ? 0 : Double(correct) / Double(words.count) }
+
+    /// 回忆限时：每词 4 秒 + 8 秒缓冲
+    private var recallLimit: Int { count * 4 + 8 }
+    private var recallRatio: Double {
+        recallLimit <= 0 ? 0 : max(0, min(1, Double(recallLeft) / Double(recallLimit)))
+    }
+    private var recallTint: Color {
+        recallLeft <= 10 ? Theme.danger : (recallRatio <= 0.34 ? Theme.warn : Theme.accent)
+    }
+    private func clock(_ seconds: Int) -> String {
+        String(format: "%d:%02d", max(0, seconds) / 60, max(0, seconds) % 60)
+    }
 
     var body: some View {
         ZStack {
@@ -67,7 +86,10 @@ struct WordFlashView: View {
                 }
             }
         }
-        .onDisappear { timerTask?.cancel() }
+        .onDisappear {
+            timerTask?.cancel()
+            recallTask?.cancel()
+        }
     }
 
     // MARK: 顶栏
@@ -77,6 +99,7 @@ struct WordFlashView: View {
             Button {
                 Haptic.tap()
                 timerTask?.cancel()
+                recallTask?.cancel()
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
@@ -105,7 +128,7 @@ struct WordFlashView: View {
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(Theme.text)
                     .lineSpacing(4)
-                Text("先用故事链或记忆宫殿把词串起来，词会一次显示 1.6 秒。合上材料后立刻回忆，是最有效的编码检验。")
+                Text("先用故事链或记忆宫殿把词串起来，每个词只闪现 1.4–1.9 秒。合上材料后立刻回忆，倒计时到点自动交卷。")
                     .font(.system(size: 13.5))
                     .foregroundStyle(Theme.textSub)
                     .lineSpacing(3)
@@ -121,6 +144,15 @@ struct WordFlashView: View {
                     levelChip("中 · 10 词", value: 10)
                     levelChip("高 · 15 词", value: 15)
                 }
+                HStack(spacing: 6) {
+                    Image(systemName: "timer")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("回忆限时 \(recallLimit) 秒 · 每词 4 秒 + 8 秒缓冲")
+                        .font(.system(size: 12, weight: .medium))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(Theme.textFaint)
+                .padding(.top, 2)
             }
 
             Spacer()
@@ -201,18 +233,23 @@ struct WordFlashView: View {
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(Theme.textFaint)
+
+                // 单词语速条：显示这个词还剩多少时间
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.10)).frame(width: 132, height: 3)
+                    Capsule().fill(Theme.accent.opacity(0.85))
+                        .frame(width: max(1, 132 * wordDrain), height: 3)
+                }
             }
             Spacer()
 
             VStack(spacing: 12) {
-                Text("给它加动作、加颜色，或挂到熟悉的位置上")
+                Text("每个词 \(String(format: "%.1f", perWordSeconds)) 秒 · 给它加动作、颜色，或挂到熟悉的位置上")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textFaint)
                 Button {
-                    timerTask?.cancel()
                     Haptic.tap(.medium)
-                    withAnimation(.spring(response: 0.34, dampingFraction: 0.85)) { phase = .recall }
-                    focused = true
+                    beginRecall()
                 } label: {
                     Text("提前开始回忆")
                         .font(.system(size: 13.5, weight: .medium))
@@ -233,15 +270,17 @@ struct WordFlashView: View {
 
     private var recallView: some View {
         VStack(alignment: .leading, spacing: 16) {
+            recallTimer
+                .padding(.top, 18)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("写回刚才的 \(words.count) 个词")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Theme.text)
-                Text("顺序不重要，用顿号或空格分隔。想不起来的时候先猜一个。")
+                Text("顺序不重要，用顿号或空格分隔。想不起来的时候先猜一个，时间到会自动交卷。")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textSub)
             }
-            .padding(.top, 26)
 
             TextField("", text: $input, prompt: Text("例如：灯塔、齿轮、雨伞").foregroundStyle(Theme.textFaint),
                       axis: .vertical)
@@ -269,6 +308,41 @@ struct WordFlashView: View {
         .padding(.horizontal, 22)
         .padding(.bottom, 24)
         .onAppear { focused = true }
+    }
+
+    /// 回忆倒计时条：数字 + 进度，剩余 10 秒内转红
+    private var recallTimer: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: recallLeft <= 10 ? "timer" : "hourglass")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(recallTint)
+                Text(clock(recallLeft))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(recallTint)
+                    .contentTransition(.numericText())
+                Spacer()
+                Text("限时 \(recallLimit) 秒")
+                    .font(.system(size: 11, weight: .medium))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textFaint)
+            }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.10))
+                    Capsule()
+                        .fill(recallTint)
+                        .frame(width: max(2, geo.size.width * recallRatio))
+                        .animation(.linear(duration: 0.9), value: recallRatio)
+                }
+            }
+            .frame(height: 5)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glass(radius: 16)
+        .animation(.easeInOut(duration: 0.3), value: recallTint)
     }
 
     // MARK: 结果
@@ -299,6 +373,16 @@ struct WordFlashView: View {
                         .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSub)
                         .multilineTextAlignment(.center)
+
+                    HStack(spacing: 8) {
+                        TagChip(text: "用时 \(usedSeconds) 秒", tint: Theme.textSub)
+                        if timedOut {
+                            TagChip(text: "时间到自动交卷", tint: Theme.danger, filled: true)
+                        } else {
+                            TagChip(text: "限时 \(recallLimit) 秒", tint: Theme.textFaint)
+                        }
+                    }
+                    .padding(.top, 2)
                 }
                 .padding(.top, 22)
 
@@ -348,6 +432,7 @@ struct WordFlashView: View {
     }
 
     private var headline: String {
+        if timedOut && score < 0.5 { return "时间到，检索速度还没跟上" }
         switch score {
         case 0.99...: return "全对，编码已经很稳"
         case 0.8..<0.99: return "记忆牢固"
@@ -357,8 +442,11 @@ struct WordFlashView: View {
     }
 
     private var subhead: String {
+        if timedOut {
+            return "时间到了还没写够，说明检索速度跟不上：先练少一点的词，把词串成一条固定路线"
+        }
         switch score {
-        case 0.99...: return "试着换更长的词表，或者练倒序提取"
+        case 0.99...: return "在限时内全部取出，试着换更长的词表，或者练倒序提取"
         case 0.8..<0.99: return "漏掉的词明天会再出现一次，间隔重复会补上"
         case 0.5..<0.8: return "把没记住的词编进一个夸张故事，再练一遍"
         default: return "先用 5 个词建立信心：位置固定、图像具体"
@@ -373,8 +461,12 @@ struct WordFlashView: View {
         input = ""
         index = 0
         countdown = 3
+        timedOut = false
+        usedSeconds = 0
+        recallLeft = recallLimit
         startedAt = Date()
         timerTask?.cancel()
+        recallTask?.cancel()
         withAnimation { phase = .countdown }
         timerTask = Task { await runCountdown() }
     }
@@ -384,6 +476,11 @@ struct WordFlashView: View {
         words = []
         matched = []
         input = ""
+        timedOut = false
+        usedSeconds = 0
+        recallLeft = recallLimit
+        timerTask?.cancel()
+        recallTask?.cancel()
     }
 
     @MainActor
@@ -402,12 +499,18 @@ struct WordFlashView: View {
 
     @MainActor
     private func runMemorize() async {
-        let perWord: UInt64 = count <= 5 ? 1_900_000_000 : (count <= 10 ? 1_600_000_000 : 1_400_000_000)
         while index < count {
-            try? await Task.sleep(nanoseconds: perWord)
+            wordDrain = 1
+            withAnimation(.linear(duration: perWordSeconds)) { wordDrain = 0 }
+            try? await Task.sleep(nanoseconds: UInt64(perWordSeconds * 1_000_000_000))
             guard !Task.isCancelled, phase == .memorize else { return }
             advance()
         }
+    }
+
+    /// 单个词的停留时长：词越少给得越宽裕
+    private var perWordSeconds: Double {
+        count <= 5 ? 1.9 : (count <= 10 ? 1.6 : 1.4)
     }
 
     private func advance() {
@@ -415,13 +518,42 @@ struct WordFlashView: View {
         Haptic.select()
         if index + 1 < words.count {
             withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) { index += 1 }
+            wordDrain = 1
         } else {
-            withAnimation(.spring(response: 0.34, dampingFraction: 0.85)) { phase = .recall }
-            focused = true
+            beginRecall()
         }
     }
 
+    private func beginRecall() {
+        timerTask?.cancel()
+        recallTask?.cancel()
+        recallLeft = recallLimit
+        timedOut = false
+        withAnimation(.spring(response: 0.34, dampingFraction: 0.85)) { phase = .recall }
+        focused = true
+        recallTask = Task { await runRecallCountdown() }
+    }
+
+    @MainActor
+    private func runRecallCountdown() async {
+        let limit = recallLimit
+        var left = limit
+        while left > 0 {
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard !Task.isCancelled, phase == .recall else { return }
+            left -= 1
+            recallLeft = left
+            if left == 10 { Haptic.tap(.medium) }
+        }
+        guard !Task.isCancelled, phase == .recall else { return }
+        timedOut = true
+        Haptic.failure()
+        submit()
+    }
+
     private func submit() {
+        recallTask?.cancel()
+        usedSeconds = max(0, recallLimit - recallLeft)
         matched = Judge.match(Judge.split(input), targets: words)
         focused = false
         if correct == words.count { Haptic.success() } else { Haptic.tap(.medium) }
