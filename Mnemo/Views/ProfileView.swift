@@ -27,6 +27,7 @@ struct ProfileView: View {
                     entryRows
                     planCard
                     badgeSection
+                    appearanceSection
                     accountSection
                     resetRow
                 }
@@ -63,7 +64,7 @@ struct ProfileView: View {
                 .frame(width: 60, height: 60)
                 .background(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(LinearGradient(colors: [Theme.accent.opacity(0.22), Color.white.opacity(0.04)],
+                        .fill(LinearGradient(colors: [Theme.accent.opacity(0.22), Theme.veil(0.04)],
                                              startPoint: .topLeading, endPoint: .bottomTrailing))
                         .overlay(
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -81,7 +82,7 @@ struct ProfileView: View {
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(Color.white.opacity(0.09))
+                        Capsule().fill(Theme.veil(0.09))
                         Capsule().fill(Theme.accent)
                             .frame(width: max(4, geo.size.width * store.xpProgress.progress))
                     }
@@ -115,7 +116,7 @@ struct ProfileView: View {
                     VStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 3, style: .continuous)
                             .fill(reached ? Theme.accent.opacity(current ? 1 : 0.55)
-                                  : Color.white.opacity(0.09))
+                                  : Theme.veil(0.09))
                             .frame(height: current ? 6 : 4)
                         Text(level.name)
                             .font(.system(size: 9.5, weight: current ? .semibold : .regular))
@@ -234,7 +235,7 @@ struct ProfileView: View {
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule().fill(Theme.veil(0.08))
                     Capsule()
                         .fill(LinearGradient(colors: [Theme.accent.opacity(0.7), Theme.accent],
                                              startPoint: .leading, endPoint: .trailing))
@@ -294,7 +295,7 @@ struct ProfileView: View {
                     .padding(.vertical, 14)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(b.unlocked ? b.tint.opacity(0.10) : Color.white.opacity(0.035))
+                            .fill(b.unlocked ? b.tint.opacity(0.10) : Theme.veil(0.035))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                                     .strokeBorder(b.unlocked ? b.tint.opacity(0.25) : Theme.stroke,
@@ -333,6 +334,56 @@ struct ProfileView: View {
             .init(title: "进阶三级", hint: "达到 Lv.3", symbol: "arrow.up.forward.circle.fill",
                   tint: Theme.tint("seq"), unlocked: store.learnerLevel.index >= 3)
         ]
+    }
+
+    /// 外观：深夜 / 白天 / 跟随系统，点了立刻整屏换肤
+    private var appearanceSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Text("外观")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Theme.text)
+                Spacer()
+                Text(store.appearance.detail)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.textFaint)
+            }
+
+            HStack(spacing: 8) {
+                ForEach(Appearance.allCases) { mode in
+                    let on = store.appearance == mode
+                    Button {
+                        Haptic.select()
+                        withAnimation(.easeInOut(duration: 0.32)) { store.setAppearance(mode) }
+                    } label: {
+                        VStack(spacing: 8) {
+                            ThemePreviewSwatch(mode: mode)
+                            HStack(spacing: 4) {
+                                Image(systemName: mode.symbol)
+                                    .font(.system(size: 9.5, weight: .bold))
+                                Text(mode.title)
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .foregroundStyle(on ? Theme.accent : Theme.textSub)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                .fill(on ? Theme.accent.opacity(0.12) : Theme.veil(0.04))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                        .strokeBorder(on ? Theme.accent.opacity(0.55) : Theme.stroke,
+                                                      lineWidth: on ? 1.4 : 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+        }
+        .padding(15)
+        .glass(radius: 18)
     }
 
     private var accountSection: some View {

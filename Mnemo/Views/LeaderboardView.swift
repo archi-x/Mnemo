@@ -109,7 +109,7 @@ struct LeaderboardView: View {
     private func rankBadge(_ rank: Int) -> some View {
         ZStack {
             Circle()
-                .fill(rank <= 3 ? medalTint(rank).opacity(0.16) : Color.white.opacity(0.05))
+                .fill(rank <= 3 ? medalTint(rank).opacity(0.16) : Theme.veil(0.05))
                 .frame(width: 26, height: 26)
             if rank <= 3 {
                 Image(systemName: "medal.fill")

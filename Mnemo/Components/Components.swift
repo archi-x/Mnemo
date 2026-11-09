@@ -6,7 +6,7 @@ struct ProgressRing: View {
     var progress: Double
     var lineWidth: CGFloat = 10
     var tint: Color = Theme.accent
-    var track: Color = Color.white.opacity(0.08)
+    var track: Color = Theme.veil(0.08)
 
     var body: some View {
         ZStack {
@@ -34,7 +34,7 @@ struct TagChip: View {
     var body: some View {
         Text(text)
             .font(.system(size: 11.5, weight: .semibold))
-            .foregroundStyle(filled ? Color.black.opacity(0.82) : tint)
+            .foregroundStyle(filled ? Theme.onAccent : tint)
             .padding(.horizontal, 9)
             .padding(.vertical, 4.5)
             .background(
@@ -140,7 +140,7 @@ struct PrimaryButton: View {
                 if let symbol { Image(systemName: symbol).font(.system(size: 14, weight: .bold)) }
                 Text(title).font(.system(size: 16, weight: .semibold))
             }
-            .foregroundStyle(Color.black.opacity(0.86))
+            .foregroundStyle(Theme.onAccent)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
@@ -183,6 +183,53 @@ struct ScaleButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.965 : 1)
             .opacity(configuration.isPressed ? 0.92 : 1)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+// MARK: - 外观预览
+
+/// 一小块迷你界面，用来在「我的」里预览两套配色。色值写死，不跟随当前主题。
+struct ThemePreviewSwatch: View {
+    let mode: Appearance
+    var body: some View {
+        ZStack {
+            switch mode {
+            case .night:
+                mini(bg: 0x0E1119, card: 0xFFFFFF, cardAlpha: 0.10, accent: 0xF5B455)
+            case .day:
+                mini(bg: 0xF6F2EA, card: 0xFFFFFF, cardAlpha: 0.95, accent: 0xB26A10)
+            case .auto:
+                HStack(spacing: 0) {
+                    mini(bg: 0x0E1119, card: 0xFFFFFF, cardAlpha: 0.10, accent: 0xF5B455)
+                    mini(bg: 0xF6F2EA, card: 0xFFFFFF, cardAlpha: 0.95, accent: 0xB26A10)
+                }
+            }
+        }
+        .frame(width: 44, height: 32)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(Color(hex: 0x888888).opacity(0.22), lineWidth: 0.8)
+        )
+    }
+
+    private func mini(bg: UInt32, card: UInt32, cardAlpha: Double, accent: UInt32) -> some View {
+        ZStack(alignment: .topLeading) {
+            Color(hex: bg)
+            VStack(alignment: .leading, spacing: 3) {
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(Color(hex: card).opacity(cardAlpha))
+                    .frame(width: 22, height: 9)
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(Color(hex: accent))
+                    .frame(width: 14, height: 4)
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(Color(hex: card).opacity(cardAlpha * 0.7))
+                    .frame(width: 18, height: 3)
+            }
+            .padding(5)
+        }
+        .frame(width: 22, height: 32)
     }
 }
 

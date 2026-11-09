@@ -98,12 +98,12 @@ struct NumberRunView: View {
         } label: {
             Text(label)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(on ? Color.black.opacity(0.85) : Theme.textSub)
+                .foregroundStyle(on ? Theme.onAccent : Theme.textSub)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(on ? Theme.tint("seq") : Color.white.opacity(0.06))
+                        .fill(on ? Theme.tint("seq") : Theme.veil(0.06))
                 )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -117,7 +117,7 @@ struct NumberRunView: View {
             HStack(spacing: 3) {
                 ForEach(0..<total, id: \.self) { i in
                     Capsule()
-                        .fill(i < remaining ? Theme.tint("seq") : Color.white.opacity(0.12))
+                        .fill(i < remaining ? Theme.tint("seq") : Theme.veil(0.12))
                         .frame(height: 3)
                 }
             }
@@ -189,7 +189,7 @@ struct NumberRunView: View {
             HStack(spacing: 4) {
                 ForEach(0..<digits.count, id: \.self) { i in
                     Capsule()
-                        .fill(i < input.count ? Theme.tint("seq") : Color.white.opacity(0.1))
+                        .fill(i < input.count ? Theme.tint("seq") : Theme.veil(0.1))
                         .frame(height: 4)
                 }
             }
@@ -249,7 +249,7 @@ struct NumberRunView: View {
                             .padding(.vertical, 9)
                             .background(
                                 RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                    .fill(Color.white.opacity(0.04))
+                                    .fill(Theme.veil(0.04))
                             )
                         }
                     }

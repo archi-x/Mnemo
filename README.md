@@ -6,6 +6,7 @@
 把 Obsidian 里的《记忆法全景手册》变成一个每天真的练一次的原生 iOS App。
 
 - **本机登录**：昵称 + 头像 + 可选 4 位进入密码，解锁用自绘数字键盘；不注册、不联网，档案只写在这台设备
+- **深夜 / 白天双主题**：所有颜色都是动态令牌，切换在「我的 → 外观」里，一点即时换肤（也可跟随系统），不重启、不丢当前页面
 - 40 个记忆法知识库（自动从手册 + 儿童版抽取）
 - 四大专项训练：词表闪记 / 数字桩 / 记忆宫殿 / 方法练习
 - **九种题型 · 三阶练习**：概念配对、方法归类、步骤定位、原理溯源、材料适配、流程排除、步骤衔接、案例归属、应用编码（L1→L3）
@@ -37,6 +38,12 @@
 | 目标计划 | 学习报告 | 同级别排名 | 闯关结算 |
 | --- | --- | --- | --- |
 | ![](Docs/screenshots/goals.png) | ![](Docs/screenshots/report.png) | ![](Docs/screenshots/rank.png) | ![](Docs/screenshots/quest_result.png) |
+
+白天配色（同一套界面，纸感底 + 深琥珀）：
+
+| 今日（白天） | 我的（白天） |
+| --- | --- |
+| ![](Docs/screenshots/today-day.png) | ![](Docs/screenshots/profile-day.png) |
 
 ### 闯关：四个学龄段四套玩法
 
@@ -81,7 +88,7 @@ xcrun simctl launch "iPhone 18 Pro" com.tal.mnemo
 ## 发布
 
 TestFlight 打包与上传：`./Scripts/release.sh`，账号侧准备见 [Docs/RELEASE.md](Docs/RELEASE.md)。
-App Store 截图（6.9 英寸 1320×2868，共 10 张）：`./Scripts/screenshots.sh`，清单与上传说明见 [Docs/appstore/README.md](Docs/appstore/README.md)。
+App Store 截图（6.9 英寸 1320×2868，共 10 张）：`./Scripts/screenshots.sh`，白天配色加 `THEME=day`，清单与上传说明见 [Docs/appstore/README.md](Docs/appstore/README.md)。
 
 ## 目录
 

@@ -77,7 +77,7 @@ struct QuizRunnerView: View {
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.1))
+                    Capsule().fill(Theme.veil(0.1))
                     Capsule().fill(Theme.accent)
                         .frame(width: geo.size.width *
                                (phase == .result ? 1 : Double(index) / Double(max(1, exercises.count))))
@@ -246,7 +246,7 @@ struct QuizRunnerView: View {
                     } label: {
                         Text("默写出来了")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.black.opacity(0.85))
+                            .foregroundStyle(Theme.onAccent)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 13)
                             .background(
@@ -367,7 +367,7 @@ struct QuizRunnerView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
                                 RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                    .fill(Color.white.opacity(0.04))
+                                    .fill(Theme.veil(0.04))
                             )
                         }
                     }

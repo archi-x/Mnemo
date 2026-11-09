@@ -19,6 +19,7 @@ final class AppStore: ObservableObject {
     @Published var methodStats: [String: DayStat] = [:]
     @Published var questStars: [String: Int] = [:]
     @Published var profile: Profile?
+    @Published var appearance: Appearance = .night
     @Published var isUnlocked = false
     @Published var pendingLevelUp: Int?
     @Published var snapshotVersion = 0
@@ -37,7 +38,13 @@ final class AppStore: ObservableObject {
     /// 启动时的解锁策略：没有档案 → 登录页；有档案且设了密码 → 锁屏；否则直接进入
     private func restoreSession() {
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-skipLogin") {
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-day") { appearance = .day }
+        if args.contains("-night") { appearance = .night }
+        if args.contains("-autoTheme") { appearance = .auto }
+        #endif
+        #if DEBUG
+        if args.contains("-skipLogin") {
             if profile == nil {
                 profile = Profile(id: UUID().uuidString, nickname: "林小满",
                                   avatar: Profile.avatars[0], pinHash: nil, createdAt: Date())
@@ -45,7 +52,7 @@ final class AppStore: ObservableObject {
             isUnlocked = true
             return
         }
-        if ProcessInfo.processInfo.arguments.contains("-demoLocked") {
+        if args.contains("-demoLocked") {
             if profile == nil {
                 profile = Profile(id: UUID().uuidString, nickname: "林小满",
                                   avatar: Profile.avatars[0],
@@ -231,17 +238,19 @@ final class AppStore: ObservableObject {
         var methodStats: [String: DayStat]
         var questStars: [String: Int]
         var profile: Profile?
+        var appearance: Appearance
 
         enum CodingKeys: String, CodingKey {
             case cards, stats, best, records, learnedMethods, completedPlanDays, wrongItems, dayStats
-            case xp, xpByDay, goals, methodStats, questStars, profile
+            case xp, xpByDay, goals, methodStats, questStars, profile, appearance
         }
 
         init(cards: [ReviewCard], stats: Stats, best: [String: Double], records: [DrillRecord],
              learnedMethods: [Int], completedPlanDays: [Int],
              wrongItems: [WrongItem], dayStats: [String: DayStat],
              xp: Int, xpByDay: [String: Int], goals: [Goal],
-             methodStats: [String: DayStat], questStars: [String: Int], profile: Profile?) {
+             methodStats: [String: DayStat], questStars: [String: Int], profile: Profile?,
+             appearance: Appearance) {
             self.cards = cards
             self.stats = stats
             self.best = best
@@ -256,6 +265,7 @@ final class AppStore: ObservableObject {
             self.methodStats = methodStats
             self.questStars = questStars
             self.profile = profile
+            self.appearance = appearance
         }
 
         /// 兼容旧版本存档：缺字段时用空值补齐
@@ -275,6 +285,7 @@ final class AppStore: ObservableObject {
             methodStats = try c.decodeIfPresent([String: DayStat].self, forKey: .methodStats) ?? [:]
             questStars = try c.decodeIfPresent([String: Int].self, forKey: .questStars) ?? [:]
             profile = try c.decodeIfPresent(Profile.self, forKey: .profile)
+            appearance = try c.decodeIfPresent(Appearance.self, forKey: .appearance) ?? .night
         }
     }
 
@@ -300,6 +311,7 @@ final class AppStore: ObservableObject {
         methodStats = snap.methodStats
         questStars = snap.questStars
         profile = snap.profile
+        appearance = snap.appearance
     }
 
     func persist() {
@@ -311,7 +323,8 @@ final class AppStore: ObservableObject {
                             xp: xp, xpByDay: xpByDay, goals: goals,
                             methodStats: methodStats,
                             questStars: questStars,
-                            profile: profile)
+                            profile: profile,
+                            appearance: appearance)
         let url = fileURL
         saveQueue.async {
             guard let data = try? JSONEncoder().encode(snap) else { return }

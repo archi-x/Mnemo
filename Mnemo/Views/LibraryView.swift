@@ -140,7 +140,7 @@ struct LibraryView: View {
             .padding(13)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(LinearGradient(colors: [Theme.tint("deep").opacity(0.14), Color.white.opacity(0.03)],
+                    .fill(LinearGradient(colors: [Theme.tint("deep").opacity(0.14), Theme.veil(0.03)],
                                          startPoint: .leading, endPoint: .trailing))
             )
         }
@@ -174,11 +174,11 @@ struct LibraryView: View {
                     .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                     .opacity(0.65)
             }
-            .foregroundStyle(selected ? Color.black.opacity(0.85) : Theme.textSub)
+            .foregroundStyle(selected ? Theme.onAccent : Theme.textSub)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                Capsule().fill(selected ? tint : Color.white.opacity(0.05))
+                Capsule().fill(selected ? tint : Theme.veil(0.05))
             )
         }
         .buttonStyle(.plain)
@@ -297,7 +297,7 @@ struct DiagnoseView: View {
                             .padding(.vertical, 11)
                             .background(
                                 RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                    .fill(Color.white.opacity(0.035))
+                                    .fill(Theme.veil(0.035))
                             )
                         }
                     }

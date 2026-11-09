@@ -57,7 +57,7 @@ struct ReviewSessionView: View {
                     .foregroundStyle(Theme.accent)
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(Color.white.opacity(0.1))
+                        Capsule().fill(Theme.veil(0.1))
                         Capsule().fill(Theme.accent)
                             .frame(width: geo.size.width * (Double(index) / Double(max(1, queue.count))))
                     }

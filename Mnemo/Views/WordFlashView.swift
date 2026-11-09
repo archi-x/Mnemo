@@ -172,13 +172,13 @@ struct WordFlashView: View {
                 Text(label.replacingOccurrences(of: " · ", with: "\n"))
                     .font(.system(size: 13, weight: .semibold))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(selected ? Color.black.opacity(0.85) : Theme.textSub)
+                    .foregroundStyle(selected ? Theme.onAccent : Theme.textSub)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 11)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(selected ? Theme.accent : Color.white.opacity(0.06))
+                    .fill(selected ? Theme.accent : Theme.veil(0.06))
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -212,7 +212,7 @@ struct WordFlashView: View {
             HStack(spacing: 4) {
                 ForEach(words.indices, id: \.self) { i in
                     Capsule()
-                        .fill(i <= index ? Theme.accent : Color.white.opacity(0.12))
+                        .fill(i <= index ? Theme.accent : Theme.veil(0.12))
                         .frame(height: 3)
                 }
             }
@@ -236,7 +236,7 @@ struct WordFlashView: View {
 
                 // 单词语速条：显示这个词还剩多少时间
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.10)).frame(width: 132, height: 3)
+                    Capsule().fill(Theme.veil(0.10)).frame(width: 132, height: 3)
                     Capsule().fill(Theme.accent.opacity(0.85))
                         .frame(width: max(1, 132 * wordDrain), height: 3)
                 }
@@ -330,7 +330,7 @@ struct WordFlashView: View {
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.10))
+                    Capsule().fill(Theme.veil(0.10))
                     Capsule()
                         .fill(recallTint)
                         .frame(width: max(2, geo.size.width * recallRatio))
@@ -409,7 +409,7 @@ struct WordFlashView: View {
                         .padding(.vertical, 11)
                         .background(
                             RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                .fill(Color.white.opacity(0.04))
+                                .fill(Theme.veil(0.04))
                         )
                     }
                 }

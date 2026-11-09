@@ -174,8 +174,8 @@ struct CalendarView: View {
 
     private func background(_ day: Date, sessions: Int, isToday: Bool, isSelected: Bool) -> Color {
         if isSelected { return Theme.accent.opacity(0.16) }
-        if sessions > 0 { return Color.white.opacity(0.05 + Double(min(3, sessions)) * 0.025) }
-        if isToday { return Color.white.opacity(0.06) }
+        if sessions > 0 { return Theme.veil(0.05 + Double(min(3, sessions)) * 0.025) }
+        if isToday { return Theme.veil(0.06) }
         return Color.clear
     }
 
@@ -283,14 +283,14 @@ struct WeekStrip: View {
                         .monospacedDigit()
                         .foregroundStyle(sessions > 0 ? Theme.text : Theme.textFaint)
                     Circle()
-                        .fill(sessions > 0 ? Theme.accent : Color.white.opacity(0.12))
+                        .fill(sessions > 0 ? Theme.accent : Theme.veil(0.12))
                         .frame(width: 5, height: 5)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isToday ? Theme.accent.opacity(0.14) : Color.white.opacity(0.03))
+                        .fill(isToday ? Theme.accent.opacity(0.14) : Theme.veil(0.03))
                 )
             }
         }

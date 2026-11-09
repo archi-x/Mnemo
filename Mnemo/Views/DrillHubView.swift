@@ -227,7 +227,7 @@ private struct DrillCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(LinearGradient(colors: [tint.opacity(0.16), Color.white.opacity(0.03)],
+                    .fill(LinearGradient(colors: [tint.opacity(0.16), Theme.veil(0.03)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing))
                     .overlay(
                         RoundedRectangle(cornerRadius: 22, style: .continuous)

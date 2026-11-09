@@ -10,19 +10,19 @@ enum QuestOptionState {
 
     var border: Color {
         switch self {
-        case .normal: return Color.white.opacity(0.08)
+        case .normal: return Theme.veil(0.08)
         case .correct: return Theme.success
         case .wrong: return Theme.danger
-        case .dimmed: return Color.white.opacity(0.04)
+        case .dimmed: return Theme.veil(0.04)
         }
     }
 
     var fill: Color {
         switch self {
-        case .normal: return Color.white.opacity(0.06)
+        case .normal: return Theme.veil(0.06)
         case .correct: return Theme.success.opacity(0.16)
         case .wrong: return Theme.danger.opacity(0.16)
-        case .dimmed: return Color.white.opacity(0.02)
+        case .dimmed: return Theme.veil(0.02)
         }
     }
 }
@@ -90,7 +90,7 @@ struct QuestProgressBar: View {
         VStack(spacing: 5) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule().fill(Theme.veil(0.08))
                     Capsule().fill(tint)
                         .frame(width: max(3, geo.size.width * min(1, Double(done) / Double(max(1, total)))))
                 }
@@ -156,7 +156,7 @@ struct OrderStepsView: View {
                             HStack(spacing: 9) {
                                 Text("\(i + 1)")
                                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color.black.opacity(0.85))
+                                    .foregroundStyle(Theme.onAccent)
                                     .frame(width: 20, height: 20)
                                     .background(Circle().fill(stage.tint))
                                 Text(step)
@@ -180,7 +180,7 @@ struct OrderStepsView: View {
                                         .foregroundStyle(Theme.textFaint)
                                         .frame(width: 20, height: 20)
                                         .background(
-                                            Circle().strokeBorder(Color.white.opacity(0.16), lineWidth: 1)
+                                            Circle().strokeBorder(Theme.veil(0.16), lineWidth: 1)
                                         )
                                     Text(i == placed.count ? "下一步…" : "待填")
                                         .font(.system(size: 13, weight: .medium))
@@ -192,7 +192,7 @@ struct OrderStepsView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .strokeBorder(Color.white.opacity(0.07),
+                                        .strokeBorder(Theme.veil(0.07),
                                                       style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
                                 )
                             }
@@ -650,7 +650,7 @@ struct EncodeLabView: View {
                 } label: {
                     Text("记住了")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.black.opacity(0.86))
+                        .foregroundStyle(Theme.onAccent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(RoundedRectangle(cornerRadius: 13, style: .continuous)

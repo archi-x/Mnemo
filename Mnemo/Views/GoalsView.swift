@@ -109,7 +109,7 @@ struct GoalsView: View {
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule().fill(Theme.veil(0.08))
                     Capsule()
                         .fill(p.done ? Theme.success : tint)
                         .frame(width: max(6, geo.size.width * p.ratio))
@@ -227,7 +227,7 @@ struct GoalsView: View {
                                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                                             .fill(pickKind == kind && !used
                                                   ? Theme.accent.opacity(0.16)
-                                                  : Color.white.opacity(0.04))
+                                                  : Theme.veil(0.04))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                                     .strokeBorder(pickKind == kind && !used
@@ -252,12 +252,12 @@ struct GoalsView: View {
                                 } label: {
                                     Text("\(v)\(pickKind == .accuracy ? "%" : "")")
                                         .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(pickTarget == v ? Color.black.opacity(0.85) : Theme.text)
+                                        .foregroundStyle(pickTarget == v ? Theme.onAccent : Theme.text)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 11)
                                         .background(
                                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                .fill(pickTarget == v ? Theme.accent : Color.white.opacity(0.05))
+                                                .fill(pickTarget == v ? Theme.accent : Theme.veil(0.05))
                                         )
                                 }
                                 .buttonStyle(ScaleButtonStyle())

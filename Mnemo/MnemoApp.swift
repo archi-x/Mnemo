@@ -12,7 +12,7 @@ struct MnemoApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(store)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(store.appearance.colorScheme)
                 .tint(Theme.accent)
         }
     }

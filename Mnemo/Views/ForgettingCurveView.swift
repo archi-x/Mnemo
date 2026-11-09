@@ -119,7 +119,7 @@ struct ForgettingCurveView: View {
             .chartYScale(domain: 0...1.05)
             .chartYAxis {
                 AxisMarks(values: [0, 0.5, 1]) { value in
-                    AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
+                    AxisGridLine().foregroundStyle(Theme.veil(0.06))
                     AxisValueLabel {
                         if let v = value.as(Double.self) {
                             Text("\(Int(v * 100))%")
@@ -249,7 +249,7 @@ struct ForgettingCurveView: View {
                         .frame(width: 46, alignment: .leading)
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(Color.white.opacity(0.06))
+                            Capsule().fill(Theme.veil(0.06))
                             Capsule()
                                 .fill(b.tint.opacity(0.8))
                                 .frame(width: max(3, geo.size.width * Double(b.count) / Double(maxCount)))

@@ -3,7 +3,8 @@
 #
 # 用法：
 #   ./Scripts/screenshots.sh [设备名] [输出目录]
-# 默认：设备 "Mnemo 6.9"，输出 Docs/appstore/6.9
+#   THEME=night|day ./Scripts/screenshots.sh
+# 默认：设备 "Mnemo 6.9"，输出 Docs/appstore/6.9，配色 深夜
 #
 # 前置：已用 iPhone 18 Pro Max + iOS 27.0 运行时创建过模拟器，并 boot；
 #      build 目录里有 Debug-iphonesimulator/Mnemo.app。
@@ -16,6 +17,8 @@ DEVICE="${1:-Mnemo 6.9}"
 OUT="${2:-$ROOT/Docs/appstore/6.9}"
 APP="$ROOT/build/Build/Products/Debug-iphonesimulator/Mnemo.app"
 BUNDLE="com.tal.mnemo"
+THEME="${THEME:-night}"
+if [[ "$THEME" == "day" ]]; then THEME_FLAG="-day"; else THEME_FLAG="-night"; fi
 
 [[ -d "$APP" ]] || { echo "找不到 $APP，先跑一次 xcodebuild build"; exit 1; }
 mkdir -p "$OUT"
@@ -52,7 +55,7 @@ capture() {
   echo "==> $name"
   xcrun simctl terminate "$DEVICE" "$BUNDLE" 2>/dev/null || true
   sleep 0.4
-  xcrun simctl launch "$DEVICE" "$BUNDLE" "$@" >/dev/null
+  xcrun simctl launch "$DEVICE" "$BUNDLE" "$@" "$THEME_FLAG" >/dev/null
   sleep 8
   shot "$OUT/$name.png"
   sleep 1.5
@@ -91,7 +94,8 @@ capture "09-wrong" -skipLogin -tab drill -screen wrong
 capture "10-profile" -skipLogin -tab profile
 
 # 附加：已设密码时的解锁页（放 extra，不参与 App Store 上传）
-EXTRA="$(dirname "$OUT")/extra"
+SUFFIX=""; [[ "$THEME" == "day" ]] && SUFFIX="-day"
+EXTRA="$(dirname "$OUT")/extra${SUFFIX}"
 mkdir -p "$EXTRA"
 capture "11-unlock" -demoLocked
 mv "$OUT/11-unlock.png" "$EXTRA/unlock.png" 2>/dev/null || true

@@ -147,7 +147,7 @@ struct MethodPracticeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(on ? tint.opacity(0.12) : Color.white.opacity(0.045))
+                    .fill(on ? tint.opacity(0.12) : Theme.veil(0.045))
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
                             .strokeBorder(on ? tint.opacity(0.35) : Theme.stroke, lineWidth: 1)

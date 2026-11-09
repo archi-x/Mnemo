@@ -27,6 +27,9 @@ App Store Connect → App → 版本页 → 「App 预览和截屏」→ **iPhon
 
 `extra/unlock.png` 是设了 4 位进入密码后的解锁页，只作设计存档，不参与上传。
 
+白天配色同款的一套在 `6.9-day/`（01–10 同序，`extra-day/unlock.png` 为解锁页），上传时任选一套，
+或者深色放前 5 张、白天放后 5 张做对比投放。
+
 PNG 体积较大（单张 0.6–3.9 MB，合计约 29 MB），所以没有入库，用下面的脚本随时重放出来。
 
 ## 重新生成
@@ -38,7 +41,8 @@ xcodebuild -project Mnemo.xcodeproj -scheme Mnemo \
   -derivedDataPath build build
 
 # 2. 生成截图（会自动建/复用模拟器、覆盖状态栏、清空数据后重放演示数据）
-./Scripts/screenshots.sh
+./Scripts/screenshots.sh                          # 深夜配色 → Docs/appstore/6.9
+THEME=day ./Scripts/screenshots.sh "Mnemo 6.9" "$PWD/Docs/appstore/6.9-day"   # 白天配色
 ```
 
 默认设备名 `Mnemo 6.9`（iPhone 18 Pro Max + iOS 27.0）。首次需要先建：
@@ -60,3 +64,4 @@ xcrun simctl create "Mnemo 6.9" \
 | `-tab today\|drill\|library\|profile` | 指定 Tab |
 | `-screen quest\|report\|curve\|wrong\|calendar\|goals\|rank` | 训练页内直达二级页 |
 | `-game primaryHigh 0 1` | 直达某学龄段某关某档玩法 |
+| `-night` / `-day` / `-autoTheme` | 指定启动配色（脚本里由 `THEME=night\|day` 注入） |

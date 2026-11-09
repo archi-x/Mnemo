@@ -72,11 +72,11 @@ struct QuestMapView: View {
                                     .font(.system(size: 13))
                                 Text(s.shortTitle)
                                     .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(stage == s ? Color.black.opacity(0.85) : Theme.text)
+                                    .foregroundStyle(stage == s ? Theme.onAccent : Theme.text)
                             }
                             Text("\(s.grades) \(store.stageStars(s))★")
                                 .font(.system(size: 9.5, weight: .medium))
-                                .foregroundStyle(stage == s ? Color.black.opacity(0.6) : Theme.textFaint)
+                                .foregroundStyle(stage == s ? Theme.onAccent.opacity(0.72) : Theme.textFaint)
                                 .lineLimit(1)
                         }
                         .padding(.horizontal, 12)
@@ -84,10 +84,10 @@ struct QuestMapView: View {
                         .fixedSize(horizontal: true, vertical: false)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(stage == s ? s.tint : Color.white.opacity(0.06))
+                                .fill(stage == s ? s.tint : Theme.veil(0.06))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .strokeBorder(stage == s ? .clear : Color.white.opacity(0.08),
+                                        .strokeBorder(stage == s ? .clear : Theme.veil(0.08),
                                                       lineWidth: 0.8)
                                 )
                         )
@@ -136,7 +136,7 @@ struct QuestMapView: View {
                     .padding(.vertical, 7)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.white.opacity(0.05))
+                            .fill(Theme.veil(0.05))
                     )
                 }
             }
@@ -190,7 +190,7 @@ struct QuestMapView: View {
                             .font(.system(size: 14, weight: .semibold))
                             .lineLimit(1)
                     }
-                    .foregroundStyle(Color.black.opacity(0.86))
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
@@ -262,11 +262,11 @@ struct QuestMapView: View {
             .frame(height: 84)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(unlocked ? Color.white.opacity(0.06) : Color.white.opacity(0.025))
+                    .fill(unlocked ? Theme.veil(0.06) : Theme.veil(0.025))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .strokeBorder(stars == 3 ? Theme.accent.opacity(0.45)
-                                          : Color.white.opacity(0.07),
+                                          : Theme.veil(0.07),
                                           lineWidth: stars == 3 ? 1.2 : 0.8)
                     )
             )
@@ -380,7 +380,7 @@ struct NodeLevelSheet: View {
             HStack(spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(cleared ? Theme.success.opacity(0.16) : Color.white.opacity(0.06))
+                        .fill(cleared ? Theme.success.opacity(0.16) : Theme.veil(0.06))
                         .frame(width: 38, height: 38)
                     Text("L\(spec.level)")
                         .font(.system(size: 13, weight: .bold, design: .rounded))

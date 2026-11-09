@@ -153,10 +153,10 @@ struct WrongBookView: View {
         } label: {
             Text(title)
                 .font(.system(size: 12.5, weight: .medium))
-                .foregroundStyle(on ? Color.black.opacity(0.85) : Theme.textSub)
+                .foregroundStyle(on ? Theme.onAccent : Theme.textSub)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(Capsule().fill(on ? Theme.accent : Color.white.opacity(0.05)))
+                .background(Capsule().fill(on ? Theme.accent : Theme.veil(0.05)))
         }
         .buttonStyle(.plain)
     }

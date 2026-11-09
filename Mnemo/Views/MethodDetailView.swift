@@ -131,7 +131,7 @@ struct MethodDetailView: View {
                                 .background(Circle().fill(tint.opacity(0.14)))
                             if i < method.steps.count - 1 {
                                 Rectangle()
-                                    .fill(Color.white.opacity(0.08))
+                                    .fill(Theme.veil(0.08))
                                     .frame(width: 1)
                                     .frame(maxHeight: .infinity)
                             }

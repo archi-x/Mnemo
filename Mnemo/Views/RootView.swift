@@ -65,6 +65,7 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.28), value: store.needsLogin)
+        .animation(.easeInOut(duration: 0.32), value: store.appearance)
     }
 
     private var shell: some View {
@@ -189,7 +190,7 @@ private struct LevelUpToast: View {
             } label: {
                 Text("继续")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.black.opacity(0.86))
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 11)
                     .background(
@@ -208,7 +209,7 @@ private struct LevelUpToast: View {
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .strokeBorder(Theme.accent.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.5), radius: 30, y: 12)
+                .shadow(color: Theme.shadow, radius: 30, y: 12)
         )
         .onAppear {
             Task {

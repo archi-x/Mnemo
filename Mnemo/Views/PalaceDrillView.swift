@@ -103,7 +103,7 @@ struct PalaceDrillView: View {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .fill(route.id == r.id
                                       ? Theme.tint("space").opacity(0.13)
-                                      : Color.white.opacity(0.045))
+                                      : Theme.veil(0.045))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                                         .strokeBorder(route.id == r.id
@@ -158,7 +158,7 @@ struct PalaceDrillView: View {
                 HStack(spacing: 5) {
                     ForEach(route.anchors.indices, id: \.self) { i in
                         Circle()
-                            .fill(i <= index ? Theme.tint("space") : Color.white.opacity(0.14))
+                            .fill(i <= index ? Theme.tint("space") : Theme.veil(0.14))
                             .frame(width: 6, height: 6)
                     }
                 }
@@ -263,7 +263,7 @@ struct PalaceDrillView: View {
             HStack(spacing: 4) {
                 ForEach(route.anchors.indices, id: \.self) { i in
                     Capsule()
-                        .fill(i <= index ? Theme.tint("space") : Color.white.opacity(0.12))
+                        .fill(i <= index ? Theme.tint("space") : Theme.veil(0.12))
                         .frame(height: 3)
                 }
             }
@@ -360,7 +360,7 @@ struct PalaceDrillView: View {
                         .padding(.vertical, 10)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(Color.white.opacity(0.04))
+                                .fill(Theme.veil(0.04))
                         )
                     }
                 }

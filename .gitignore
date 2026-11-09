@@ -27,4 +27,6 @@ xcshareddata/xcodecloud/
 
 # App Store 截图（体积大，按需用 Scripts/screenshots.sh 生成）
 Docs/appstore/6.9/*.png
+Docs/appstore/6.9-day/*.png
 Docs/appstore/extra/*.png
+Docs/appstore/extra-day/*.png

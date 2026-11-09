@@ -81,4 +81,11 @@ extension AppStore {
         isUnlocked = false
         resetAll()
     }
+
+    /// 切换外观：深夜 / 白天 / 跟随系统
+    func setAppearance(_ mode: Appearance) {
+        guard appearance != mode else { return }
+        appearance = mode
+        persist()
+    }
 }

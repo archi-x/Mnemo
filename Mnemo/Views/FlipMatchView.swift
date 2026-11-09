@@ -45,12 +45,12 @@ struct QuestTopBar: View {
                 .foregroundStyle(remaining <= 10 ? Theme.danger : Theme.textSub)
                 .padding(.horizontal, 9)
                 .padding(.vertical, 5)
-                .background(Capsule().fill(Color.white.opacity(0.07)))
+                .background(Capsule().fill(Theme.veil(0.07)))
             }
 
             Text("L\(level)")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.black.opacity(0.85))
+                .foregroundStyle(Theme.onAccent)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Capsule().fill(stage.tint))
@@ -254,11 +254,11 @@ struct FlipMatchView: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(card.matched
                           ? stage.tint.opacity(0.18)
-                          : (card.flipped ? Theme.bgLift : Color.white.opacity(0.06)))
+                          : (card.flipped ? Theme.bgLift : Theme.veil(0.06)))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .strokeBorder(card.matched ? stage.tint.opacity(0.55)
-                                          : Color.white.opacity(0.08),
+                                          : Theme.veil(0.08),
                                           lineWidth: 1)
                     )
 

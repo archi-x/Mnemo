@@ -141,12 +141,12 @@ struct ReportView: View {
                     y: .value("次数", p.count),
                     width: .fixed(9)
                 )
-                .foregroundStyle(p.week == 1 ? Theme.accent : Theme.accent.opacity(0.28))
+                .foregroundStyle(p.week == 1 ? Theme.accent : Theme.accentMuted)
                 .cornerRadius(3)
             }
             .chartYAxis {
                 AxisMarks(values: .automatic(desiredCount: 3)) { _ in
-                    AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
+                    AxisGridLine().foregroundStyle(Theme.veil(0.06))
                     AxisValueLabel()
                         .font(.system(size: 9))
                         .foregroundStyle(Theme.textFaint)
@@ -207,7 +207,7 @@ struct ReportView: View {
                 .chartYScale(domain: 0...100)
                 .chartYAxis {
                     AxisMarks(values: [0, 50, 100]) { _ in
-                        AxisGridLine().foregroundStyle(Color.white.opacity(0.06))
+                        AxisGridLine().foregroundStyle(Theme.veil(0.06))
                         AxisValueLabel()
                             .font(.system(size: 9))
                             .foregroundStyle(Theme.textFaint)
@@ -259,7 +259,7 @@ struct ReportView: View {
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                Capsule().fill(Color.white.opacity(0.07))
+                                Capsule().fill(Theme.veil(0.07))
                                 Capsule()
                                     .fill(Theme.tint(cat.id))
                                     .frame(width: max(4, geo.size.width * cat.accuracy))

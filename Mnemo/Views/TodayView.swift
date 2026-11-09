@@ -141,7 +141,7 @@ struct TodayView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LinearGradient(colors: [Theme.accent.opacity(0.17), Color.white.opacity(0.03)],
+                .fill(LinearGradient(colors: [Theme.accent.opacity(0.17), Theme.veil(0.03)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -265,7 +265,7 @@ struct TodayView: View {
                 } else {
                     Text("开始")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.black.opacity(0.85))
+                        .foregroundStyle(Theme.onAccent)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(Capsule().fill(Theme.accent))
@@ -299,7 +299,7 @@ struct TodayView: View {
                 Spacer()
                 Text("去练")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.black.opacity(0.85))
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
                     .background(Capsule().fill(Theme.tint("review")))
@@ -353,7 +353,7 @@ struct TodayView: View {
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 13, style: .continuous)
-                            .fill(Color.white.opacity(finished ? 0.04 : 0.08))
+                            .fill(Theme.veil(finished ? 0.04 : 0.08))
                     )
                 }
                 .disabled(finished)

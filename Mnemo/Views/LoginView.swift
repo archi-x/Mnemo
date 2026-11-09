@@ -41,10 +41,10 @@ struct PinPad: View {
                                     .frame(height: 54)
                                     .background(
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(Color.white.opacity(0.055))
+                                            .fill(Theme.veil(0.055))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                                    .strokeBorder(Color.white.opacity(0.07), lineWidth: 1)
+                                                    .strokeBorder(Theme.veil(0.07), lineWidth: 1)
                                             )
                                     )
                             }
@@ -68,9 +68,9 @@ struct PinDots: View {
         HStack(spacing: 16) {
             ForEach(0..<4, id: \.self) { i in
                 Circle()
-                    .fill(i < filled ? tint : Color.white.opacity(0.10))
+                    .fill(i < filled ? tint : Theme.veil(0.10))
                     .overlay(
-                        Circle().strokeBorder(i < filled ? tint.opacity(0.9) : Color.white.opacity(0.14),
+                        Circle().strokeBorder(i < filled ? tint.opacity(0.9) : Theme.veil(0.14),
                                               lineWidth: 1)
                     )
                     .frame(width: 13, height: 13)
@@ -194,7 +194,7 @@ struct LoginView: View {
                     .blur(radius: 80)
                     .offset(x: -60, y: -120)
                 Circle()
-                    .fill(Color(hex: 0x4FD1C5).opacity(0.08))
+                    .fill(Theme.tint("space").opacity(0.08))
                     .frame(width: 280, height: 280)
                     .blur(radius: 90)
                     .offset(x: geo.size.width - 120, y: geo.size.height - 200)
@@ -319,14 +319,14 @@ struct LoginView: View {
         } label: {
             Image(systemName: symbol)
                 .font(.system(size: 19, weight: .medium))
-                .foregroundStyle(selected ? Color.black.opacity(0.85) : Theme.textSub)
+                .foregroundStyle(selected ? Theme.onAccent : Theme.textSub)
                 .frame(width: 54, height: 54)
                 .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(selected ? Theme.accent : Color.white.opacity(0.055))
+                        .fill(selected ? Theme.accent : Theme.veil(0.055))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(selected ? Color.clear : Color.white.opacity(0.08), lineWidth: 1)
+                                .strokeBorder(selected ? Color.clear : Theme.veil(0.08), lineWidth: 1)
                         )
                 )
         }
