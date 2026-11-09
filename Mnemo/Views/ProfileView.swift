@@ -10,6 +10,7 @@ struct ProfileView: View {
     @State private var showGoals = false
     @State private var showReport = false
     @State private var showRank = false
+    @State private var showPinSetup = false
 
     private var accuracyText: String {
         store.stats.totalItems == 0 ? "—" : "\(Int(store.stats.accuracy * 100))"
@@ -26,6 +27,7 @@ struct ProfileView: View {
                     entryRows
                     planCard
                     badgeSection
+                    accountSection
                     resetRow
                 }
                 .padding(.horizontal, 20)
@@ -40,6 +42,7 @@ struct ProfileView: View {
             .fullScreenCover(isPresented: $showGoals) { GoalsView() }
             .fullScreenCover(isPresented: $showReport) { ReportView() }
             .fullScreenCover(isPresented: $showRank) { LeaderboardView() }
+            .sheet(isPresented: $showPinSetup) { PinSetupSheet() }
             .confirmationDialog("清空所有训练数据？", isPresented: $showReset, titleVisibility: .visible) {
                 Button("清空并重置", role: .destructive) {
                     Haptic.failure()
@@ -54,7 +57,7 @@ struct ProfileView: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Image(systemName: "brain.head.profile")
+            Image(systemName: store.profile?.avatar ?? "brain.head.profile")
                 .font(.system(size: 26, weight: .medium))
                 .foregroundStyle(Theme.accent)
                 .frame(width: 60, height: 60)
@@ -69,10 +72,12 @@ struct ProfileView: View {
                 )
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 7) {
-                    Text(store.learnerLevel.name)
+                    Text(store.profile?.displayName ?? "练习者")
                         .font(.system(size: 21, weight: .bold))
                         .foregroundStyle(Theme.text)
-                    TagChip(text: "Lv.\(store.learnerLevel.index)", tint: Theme.accent, filled: true)
+                        .lineLimit(1)
+                    TagChip(text: "Lv.\(store.learnerLevel.index) · \(store.learnerLevel.name)",
+                            tint: Theme.accent, filled: true)
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -328,6 +333,63 @@ struct ProfileView: View {
             .init(title: "进阶三级", hint: "达到 Lv.3", symbol: "arrow.up.forward.circle.fill",
                   tint: Theme.tint("seq"), unlocked: store.learnerLevel.index >= 3)
         ]
+    }
+
+    private var accountSection: some View {
+        VStack(spacing: 8) {
+            Button {
+                Haptic.tap()
+                showPinSetup = true
+            } label: {
+                accountRow(symbol: "lock.fill",
+                           title: "进入密码",
+                           value: store.profile?.hasPin == true ? "已开启" : "未设置")
+            }
+            .buttonStyle(ScaleButtonStyle())
+
+            if store.profile?.hasPin == true {
+                Button {
+                    Haptic.tap()
+                    store.lock()
+                } label: {
+                    accountRow(symbol: "lock.rotation", title: "锁定忆境", value: nil)
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
+
+            Button {
+                Haptic.tap()
+                store.signOut()
+            } label: {
+                accountRow(symbol: "person.crop.circle.badge.arrow.forward",
+                           title: "切换身份",
+                           value: store.profile?.joinedText)
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+    }
+
+    private func accountRow(symbol: String, title: String, value: String?) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.textSub)
+                .frame(width: 20)
+            Text(title)
+                .font(.system(size: 13.5))
+                .foregroundStyle(Theme.text)
+            Spacer()
+            if let value {
+                Text(value)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.textFaint)
+            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Theme.textFaint)
+        }
+        .padding(15)
+        .glass(radius: 16)
     }
 
     private var resetRow: some View {

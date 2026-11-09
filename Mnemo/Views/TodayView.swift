@@ -78,7 +78,7 @@ struct TodayView: View {
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("\(dateText) · \(greeting)")
+                Text("\(dateText) · \(greeting)，\(store.profile?.displayName ?? "练习者")")
                     .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textFaint)
                 Text("记忆训练")

@@ -56,6 +56,19 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
+            if store.needsLogin {
+                LoginView()
+                    .transition(.opacity)
+            } else {
+                shell
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.28), value: store.needsLogin)
+    }
+
+    private var shell: some View {
+        ZStack {
             Theme.canvas
 
             Group {
@@ -84,10 +97,6 @@ struct RootView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             TabBar(tab: $tab)
         }
-        .fullScreenCover(item: $devGame) { launch in
-            devGameView(launch)
-        }
-        .onAppear(perform: launchDevGameIfNeeded)
         .fullScreenCover(item: $devGame) { launch in
             devGameView(launch)
         }

@@ -5,6 +5,7 @@
 
 把 Obsidian 里的《记忆法全景手册》变成一个每天真的练一次的原生 iOS App。
 
+- **本机登录**：昵称 + 头像 + 可选 4 位进入密码，解锁用自绘数字键盘；不注册、不联网，档案只写在这台设备
 - 40 个记忆法知识库（自动从手册 + 儿童版抽取）
 - 四大专项训练：词表闪记 / 数字桩 / 记忆宫殿 / 方法练习
 - **九种题型 · 三阶练习**：概念配对、方法归类、步骤定位、原理溯源、材料适配、流程排除、步骤衔接、案例归属、应用编码（L1→L3）
@@ -20,6 +21,10 @@
 - 30 天训练计划、连续打卡、记忆精度 Lv.1–5、徽章
 
 ## 界面
+
+| 登录 | 解锁 | 今日 | 训练场 |
+| --- | --- | --- | --- |
+| ![](Docs/screenshots/login.png) | ![](Docs/screenshots/unlock.png) | ![](Docs/screenshots/today.png) | ![](Docs/screenshots/drill.png) |
 
 | 今日 | 训练场 | 方法库 | 我的 |
 | --- | --- | --- | --- |
@@ -45,15 +50,27 @@
 open Mnemo.xcodeproj        # Xcode 27，选 iPhone 模拟器直接 Cmd+R
 ```
 
-命令行构建：
+命令行构建（推荐用脚本，原因见下）：
+
+```bash
+./Scripts/build.sh                       # 默认 iPhone 18 Pro
+./Scripts/build.sh "iPhone 18"           # 指定模拟器
+./Scripts/build.sh --install             # 构建 + 装到模拟器 + 启动
+```
+
+直接调 `xcodebuild` 的话，**必须**带上这两个参数：
 
 ```bash
 xcodebuild -project Mnemo.xcodeproj -scheme Mnemo \
   -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
-  -derivedDataPath build build
+  -derivedDataPath build \
+  SWIFT_USE_INTEGRATED_DRIVER=NO OTHER_SWIFT_FLAGS='$(inherited) -disable-sandbox' \
+  build
 ```
 
-安装到模拟器：
+> 为什么：Xcode 27 会给宏插件（`SwiftUIMacros` 等）单独起 `swift-plugin-server` 并套一层 `sandbox-exec` 沙箱。构建本身如果已经在受限 shell / CI 沙箱里，这层嵌套沙箱申请会被拒（`sandbox-exec: sandbox_apply: Operation not permitted`），插件返回 malformed response，所有 `@State` 展开失败，然后级联出上千条 `cannot assign to property: 'self' is immutable` —— 看着像代码写错了，其实和代码无关。Xcode GUI 里 Cmd+R 不走沙箱，不受影响。
+
+安装到模拟器（`build.sh --install` 已包含）：
 
 ```bash
 xcrun simctl boot "iPhone 18 Pro"
@@ -64,6 +81,7 @@ xcrun simctl launch "iPhone 18 Pro" com.tal.mnemo
 ## 发布
 
 TestFlight 打包与上传：`./Scripts/release.sh`，账号侧准备见 [Docs/RELEASE.md](Docs/RELEASE.md)。
+App Store 截图（6.9 英寸 1320×2868，共 10 张）：`./Scripts/screenshots.sh`，清单与上传说明见 [Docs/appstore/README.md](Docs/appstore/README.md)。
 
 ## 目录
 
@@ -91,10 +109,16 @@ Mnemo/
 │   │   ├── words.json          训练词库 110 词
 │   │   └── quest.json          闯关题库（12 主题/12 方法/9 学科）
 │   └── Assets.xcassets         App 图标
-├── Scripts/extract.py          文档 → JSON 抽取脚本（可重复运行）
+├── Scripts/
+│   ├── build.sh                命令行构建（带宏沙箱修复参数）
+│   ├── release.sh              归档 → 导出 → 上传 TestFlight
+│   ├── screenshots.sh          App Store 截图批量生成
+│   └── extract.py              文档 → JSON 抽取脚本（可重复运行）
 └── Docs/
     ├── 记忆训练文档整理报告.md   文档整理结果
-    ├── DESIGN.md               UI 与交互设计（v1→v4）
+    ├── DESIGN.md               UI 与交互设计（v1→v5）
+    ├── RELEASE.md              TestFlight 发布步骤
+    ├── appstore/               App Store 截图（6.9 英寸）与上传说明
     └── screenshots/            各页面截图
 ```
 

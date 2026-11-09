@@ -18,16 +18,49 @@ final class AppStore: ObservableObject {
     @Published var goals: [Goal] = []
     @Published var methodStats: [String: DayStat] = [:]
     @Published var questStars: [String: Int] = [:]
+    @Published var profile: Profile?
+    @Published var isUnlocked = false
     @Published var pendingLevelUp: Int?
     @Published var snapshotVersion = 0
 
-    private var saveTask: Task<Void, Never>?
+    /// 串行写盘队列：保证写入顺序，避免旧快照覆盖新快照
+    private let saveQueue = DispatchQueue(label: "com.tal.mnemo.persist", qos: .utility)
 
     init() {
         catalog = Self.loadCatalog()
         words = Self.loadWords()
         load()
         seedDefaultGoals()
+        restoreSession()
+    }
+
+    /// 启动时的解锁策略：没有档案 → 登录页；有档案且设了密码 → 锁屏；否则直接进入
+    private func restoreSession() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-skipLogin") {
+            if profile == nil {
+                profile = Profile(id: UUID().uuidString, nickname: "林小满",
+                                  avatar: Profile.avatars[0], pinHash: nil, createdAt: Date())
+            }
+            isUnlocked = true
+            return
+        }
+        if ProcessInfo.processInfo.arguments.contains("-demoLocked") {
+            if profile == nil {
+                profile = Profile(id: UUID().uuidString, nickname: "林小满",
+                                  avatar: Profile.avatars[0],
+                                  pinHash: Profile.hash("2468"),
+                                  createdAt: Date())
+            }
+            isUnlocked = false
+            return
+        }
+        #endif
+        guard let profile else {
+            isUnlocked = false
+            return
+        }
+        isUnlocked = !profile.hasPin
     }
 
     // MARK: 内容加载
@@ -197,17 +230,18 @@ final class AppStore: ObservableObject {
         var goals: [Goal]
         var methodStats: [String: DayStat]
         var questStars: [String: Int]
+        var profile: Profile?
 
         enum CodingKeys: String, CodingKey {
             case cards, stats, best, records, learnedMethods, completedPlanDays, wrongItems, dayStats
-            case xp, xpByDay, goals, methodStats, questStars
+            case xp, xpByDay, goals, methodStats, questStars, profile
         }
 
         init(cards: [ReviewCard], stats: Stats, best: [String: Double], records: [DrillRecord],
              learnedMethods: [Int], completedPlanDays: [Int],
              wrongItems: [WrongItem], dayStats: [String: DayStat],
              xp: Int, xpByDay: [String: Int], goals: [Goal],
-             methodStats: [String: DayStat], questStars: [String: Int]) {
+             methodStats: [String: DayStat], questStars: [String: Int], profile: Profile?) {
             self.cards = cards
             self.stats = stats
             self.best = best
@@ -221,6 +255,7 @@ final class AppStore: ObservableObject {
             self.goals = goals
             self.methodStats = methodStats
             self.questStars = questStars
+            self.profile = profile
         }
 
         /// 兼容旧版本存档：缺字段时用空值补齐
@@ -239,6 +274,7 @@ final class AppStore: ObservableObject {
             goals = try c.decodeIfPresent([Goal].self, forKey: .goals) ?? []
             methodStats = try c.decodeIfPresent([String: DayStat].self, forKey: .methodStats) ?? [:]
             questStars = try c.decodeIfPresent([String: Int].self, forKey: .questStars) ?? [:]
+            profile = try c.decodeIfPresent(Profile.self, forKey: .profile)
         }
     }
 
@@ -263,6 +299,7 @@ final class AppStore: ObservableObject {
         goals = snap.goals
         methodStats = snap.methodStats
         questStars = snap.questStars
+        profile = snap.profile
     }
 
     func persist() {
@@ -273,10 +310,10 @@ final class AppStore: ObservableObject {
                             dayStats: dayStats,
                             xp: xp, xpByDay: xpByDay, goals: goals,
                             methodStats: methodStats,
-                            questStars: questStars)
+                            questStars: questStars,
+                            profile: profile)
         let url = fileURL
-        saveTask?.cancel()
-        saveTask = Task.detached(priority: .background) {
+        saveQueue.async {
             guard let data = try? JSONEncoder().encode(snap) else { return }
             try? data.write(to: url, options: .atomic)
         }

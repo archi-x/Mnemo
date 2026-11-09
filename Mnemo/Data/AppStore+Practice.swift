@@ -461,6 +461,11 @@ extension AppStore {
             cards.append(card)
         }
 
+        // 让前 3 张卡处于到期状态，复习队列与遗忘曲线才有内容可看
+        for i in 0..<min(3, cards.count) {
+            cards[i].due = Date().addingTimeInterval(Double(-3600 * (i + 1)))
+        }
+
         // 错题：真的从题目里生成，保证和练习一致
         if let m = method(2) {
             let exs = buildExercises(for: m, level: 2)

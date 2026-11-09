@@ -171,17 +171,31 @@ struct OrderStepsView: View {
                             .glass(radius: 12)
                         }
 
-                        if placed.isEmpty {
-                            Text("先选出第一步")
-                                .font(.system(size: 12.5))
-                                .foregroundStyle(Theme.textFaint)
-                                .padding(.vertical, 14)
-                                .frame(maxWidth: .infinity)
+                        // 还没排到的位置：画出空槽，说明一共有几步
+                        if placed.count < round.steps.count {
+                            ForEach(placed.count..<round.steps.count, id: \.self) { i in
+                                HStack(spacing: 9) {
+                                    Text("\(i + 1)")
+                                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Theme.textFaint)
+                                        .frame(width: 20, height: 20)
+                                        .background(
+                                            Circle().strokeBorder(Color.white.opacity(0.16), lineWidth: 1)
+                                        )
+                                    Text(i == placed.count ? "下一步…" : "待填")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundStyle(Theme.textFaint)
+                                    Spacer(minLength: 0)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 9)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                         .strokeBorder(Color.white.opacity(0.07),
                                                       style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
                                 )
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
