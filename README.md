@@ -61,6 +61,10 @@ xcrun simctl install "iPhone 18 Pro" build/Build/Products/Debug-iphonesimulator/
 xcrun simctl launch "iPhone 18 Pro" com.tal.mnemo
 ```
 
+## 发布
+
+TestFlight 打包与上传：`./Scripts/release.sh`，账号侧准备见 [Docs/RELEASE.md](Docs/RELEASE.md)。
+
 ## 目录
 
 ```

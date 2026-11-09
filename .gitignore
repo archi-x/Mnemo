@@ -21,3 +21,6 @@ xcuserdata/
 # 本地存档与临时产物
 *.orig
 *.tmp
+
+# Xcode Cloud / 归档临时
+xcshareddata/xcodecloud/
