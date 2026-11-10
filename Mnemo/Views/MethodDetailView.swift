@@ -6,6 +6,7 @@ struct MethodDetailView: View {
 
     @State private var cardAdded = false
     @State private var showPractice = false
+    @State private var showCases = false
 
     private var tint: Color { Theme.tint(method.categoryId) }
     private var learned: Bool { store.learnedMethods.contains(method.id) }
@@ -19,6 +20,7 @@ struct MethodDetailView: View {
                 stepsSection
                 fitSection
                 caseSection
+                if CaseBank.hasDeck(for: method.id) { caseDeckSection }
                 practiceSection
                 if !method.mistakes.isEmpty { mistakeSection }
                 if !method.combo.isEmpty { section("组合建议", body: method.combo) }
@@ -32,6 +34,12 @@ struct MethodDetailView: View {
             bottomBar
         }
         .background(Theme.canvas)
+        .fullScreenCover(isPresented: $showCases) { CaseLibraryView() }
+        #if DEBUG
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-cases") { showCases = true }
+        }
+        #endif
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -211,6 +219,68 @@ struct MethodDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .glass(radius: 16)
         }
+    }
+
+    /// 图解案例库：把方法落到 12 份真实材料上，每份三种思路
+    private var caseDeckSection: some View {
+        Button {
+            Haptic.tap()
+            showCases = true
+        } label: {
+            VStack(alignment: .leading, spacing: 11) {
+                HStack(spacing: 8) {
+                    Image(systemName: "photo.stack.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(tint)
+                        .frame(width: 30, height: 30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .fill(tint.opacity(0.14))
+                        )
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("图解案例")
+                            .font(.system(size: 14.5, weight: .semibold))
+                            .foregroundStyle(Theme.text)
+                        Text("\(CaseBank.deck.cases.count) 份材料 · \(CaseBank.totalPaths) 条记忆思路")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textSub)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(tint)
+                }
+
+                HStack(spacing: 6) {
+                    ForEach(CaseBank.deck.tiers) { t in
+                        HStack(spacing: 4) {
+                            Text(t.name)
+                                .font(.system(size: 10.5, weight: .semibold))
+                                .foregroundStyle(tint)
+                            Text("\(CaseBank.cases(in: t.id).count)")
+                                .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(Theme.textFaint)
+                        }
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3.5)
+                        .background(Capsule().fill(tint.opacity(0.10)))
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                Text("看图理解：同一份材料怎么变图像，再附三种串法，由浅入深。")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.textFaint)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glass(radius: 18, stroke: tint.opacity(0.22))
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .padding(.top, 2)
     }
 
     private var practiceSection: some View {

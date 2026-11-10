@@ -14,6 +14,7 @@ struct DrillHubView: View {
     @State private var showGoals = false
     @State private var showReport = false
     @State private var showRank = false
+    @State private var showCases = false
 
     var body: some View {
         NavigationStack {
@@ -89,6 +90,7 @@ struct DrillHubView: View {
             .fullScreenCover(isPresented: $showGoals) { GoalsView() }
             .fullScreenCover(isPresented: $showReport) { ReportView() }
             .fullScreenCover(isPresented: $showRank) { LeaderboardView() }
+            .fullScreenCover(isPresented: $showCases) { CaseLibraryView() }
             .sheet(isPresented: $showCalendar) { CalendarView() }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
@@ -103,6 +105,7 @@ struct DrillHubView: View {
                 case "goals": showGoals = true
                 case "report": showReport = true
                 case "rank": showRank = true
+                case "cases": showCases = true
                 default: break
                 }
             }
@@ -112,6 +115,12 @@ struct DrillHubView: View {
     private var advancedSection: some View {
         VStack(alignment: .leading, spacing: 9) {
             SectionHeader(title: "进阶玩法")
+            EntryRow(symbol: "photo.stack.fill", tint: Theme.tint("lang"),
+                     title: "图解案例",
+                     detail: "图像记忆法 · \(CaseBank.deck.cases.count) 例 \(CaseBank.totalPaths) 条思路",
+                     trailing: "看图") {
+                showCases = true
+            }
             EntryRow(symbol: "map.fill", tint: Theme.tint("code"),
                      title: "闯关地图",
                      detail: "四学龄段 · 48 关 · 四种玩法",
