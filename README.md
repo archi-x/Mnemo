@@ -6,6 +6,7 @@
 把 Obsidian 里的《记忆法全景手册》变成一个每天真的练一次的原生 iOS App。
 
 - **本机登录**：昵称 + 头像 + 可选 4 位进入密码，解锁用自绘数字键盘；不注册、不联网，档案只写在这台设备
+- **方法详情三例看懂**：每门方法配浅/中/深三份实例，逐步走完同一套流程（图像记忆法已上线：四个水果 → 项目四要素 → 朝代顺序）
 - **图解案例库（样板：图像记忆法）**：12 份真实材料 × 3 种记忆思路 = 36 条串法，分入门/进阶/高阶，图文对照 + 遮图自测
 - **深夜 / 白天双主题**：所有颜色都是动态令牌，切换在「我的 → 外观」里，一点即时换肤（也可跟随系统），不重启、不丢当前页面
 - 40 个记忆法知识库（自动从手册 + 儿童版抽取）
@@ -32,9 +33,9 @@
 | --- | --- | --- | --- |
 | ![](Docs/screenshots/today.png) | ![](Docs/screenshots/drill.png) | ![](Docs/screenshots/library.png) | ![](Docs/screenshots/profile.png) |
 
-| 图解案例 | 案例详情 |
-| --- | --- |
-| ![](Docs/screenshots/cases.png) | ![](Docs/screenshots/case-detail.png) |
+| 三例看懂（浅） | 三例看懂（中） | 图解案例 | 案例详情 |
+| --- | --- | --- | --- |
+| ![](Docs/screenshots/method-demo.png) | ![](Docs/screenshots/method-demo-day.png) | ![](Docs/screenshots/cases.png) | ![](Docs/screenshots/case-detail.png) |
 
 | 方法练习 | 错题强化 | 学习日历 | 遗忘曲线 |
 | --- | --- | --- | --- |
@@ -128,7 +129,7 @@ Mnemo/
 │   └── extract.py              文档 → JSON 抽取脚本（可重复运行）
 └── Docs/
     ├── 记忆训练文档整理报告.md   文档整理结果
-    ├── DESIGN.md               UI 与交互设计（v1→v6）
+    ├── DESIGN.md               UI 与交互设计（v1→v7）
     ├── RELEASE.md              TestFlight 发布步骤
     ├── appstore/               App Store 截图（6.9 英寸）与上传说明
     └── screenshots/            各页面截图

@@ -12,14 +12,16 @@ struct MethodDetailView: View {
     private var learned: Bool { store.learnedMethods.contains(method.id) }
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 hero
                 if !method.kidLine.isEmpty { kidLineCard }
                 section("原理", body: method.principle)
                 stepsSection
+                MethodDemoSection(method: method, tint: tint)
                 fitSection
-                caseSection
+                if !DemoBank.hasDemo(for: method.id) { caseSection }
                 if CaseBank.hasDeck(for: method.id) { caseDeckSection }
                 practiceSection
                 if !method.mistakes.isEmpty { mistakeSection }
@@ -30,16 +32,24 @@ struct MethodDetailView: View {
             .padding(.bottom, 22)
         }
         .scrollIndicators(.hidden)
+        #if DEBUG
+        .onAppear {
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains("-cases") { showCases = true }
+            if let i = args.firstIndex(of: "-scrollTo"), i + 1 < args.count {
+                let target = args[i + 1]
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    withAnimation(.easeInOut(duration: 0.25)) { proxy.scrollTo(target, anchor: .top) }
+                }
+            }
+        }
+        #endif
+        }
+        .fullScreenCover(isPresented: $showCases) { CaseLibraryView() }
         .safeAreaInset(edge: .bottom) {
             bottomBar
         }
         .background(Theme.canvas)
-        .fullScreenCover(isPresented: $showCases) { CaseLibraryView() }
-        #if DEBUG
-        .onAppear {
-            if ProcessInfo.processInfo.arguments.contains("-cases") { showCases = true }
-        }
-        #endif
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
