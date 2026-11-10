@@ -214,6 +214,14 @@ struct LibraryView: View {
                     Text(m.name)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.text)
+                    if DemoBank.hasDemo(for: m.id) {
+                        Text("三例")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(Theme.tint(m.categoryId))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
+                            .background(Capsule().fill(Theme.tint(m.categoryId).opacity(0.14)))
+                    }
                     if store.learnedMethods.contains(m.id) {
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 10.5))

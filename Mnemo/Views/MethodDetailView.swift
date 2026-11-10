@@ -21,7 +21,6 @@ struct MethodDetailView: View {
                 stepsSection
                 MethodDemoSection(method: method, tint: tint)
                 fitSection
-                if !DemoBank.hasDemo(for: method.id) { caseSection }
                 if CaseBank.hasDeck(for: method.id) { caseDeckSection }
                 practiceSection
                 if !method.mistakes.isEmpty { mistakeSection }
@@ -198,37 +197,6 @@ struct MethodDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(13)
         .glass(radius: 16)
-    }
-
-    private var caseSection: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            blockTitle("案例")
-            VStack(alignment: .leading, spacing: 8) {
-                if !method.caseTitle.isEmpty {
-                    Text(method.caseTitle)
-                        .font(.system(size: 13.5, weight: .semibold))
-                        .foregroundStyle(tint)
-                }
-                ForEach(Array(method.caseLines.enumerated()), id: \.offset) { i, line in
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("\(i + 1)")
-                            .font(.system(size: 10.5, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundStyle(Theme.textFaint)
-                            .padding(.top, 2)
-                        Text(line)
-                            .font(.system(size: 13.5))
-                            .foregroundStyle(Theme.text)
-                            .lineSpacing(3)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Spacer(minLength: 0)
-                    }
-                }
-            }
-            .padding(15)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glass(radius: 16)
-        }
     }
 
     /// 图解案例库：把方法落到 12 份真实材料上，每份三种思路

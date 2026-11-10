@@ -44,7 +44,7 @@ struct MethodDemoSection: View {
                 HStack(spacing: 6) {
                     Image(systemName: "info.circle")
                         .font(.system(size: 10))
-                    Text("其余方法的三例正在陆续补上，同样的结构。")
+                    Text("同一套步骤，换三份材料复演一遍，方法才算真学会。")
                         .font(.system(size: 11))
                 }
                 .foregroundStyle(Theme.textFaint)
@@ -157,7 +157,7 @@ private struct DemoCaseCard: View {
 
     /// 元素 → 图像 的对照网格
     private var imageGrid: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 54), spacing: 6)], spacing: 6) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 58), spacing: 6)], spacing: 6) {
             ForEach(caseItem.items) { item in
                 VStack(spacing: 3) {
                     Text(item.emoji)
@@ -165,8 +165,10 @@ private struct DemoCaseCard: View {
                     Text(item.text)
                         .font(.system(size: 9.5, weight: .medium))
                         .foregroundStyle(Theme.textSub)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.65)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.62)
+                        .frame(height: 23, alignment: .top)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 7)
