@@ -74,20 +74,39 @@ final class AppStore: ObservableObject {
                                   appleUserID: id.userID, appleEmail: id.email)
             }
         }
+        // 只清 Apple 绑定、保留数据：用来看「已有记录时」的登录门长什么样
+        if args.contains("-gate") {
+            if var p = profile {
+                p.appleUserID = nil
+                p.appleEmail = nil
+                profile = p
+            }
+            isUnlocked = false
+            return
+        }
         if args.contains("-skipLogin") {
+            let demo = AppleAccount.demoIdentity()
             if profile == nil {
                 profile = Profile(id: UUID().uuidString, nickname: "林小满",
-                                  avatar: Profile.avatars[0], pinHash: nil, createdAt: Date())
+                                  avatar: Profile.avatars[0], pinHash: nil, createdAt: Date(),
+                                  appleUserID: demo.userID, appleEmail: demo.email)
+            } else if profile?.isAppleAccount != true, var p = profile {
+                // 没有 Apple 身份现在进不去，截图/联调也要补一个
+                p.appleUserID = demo.userID
+                p.appleEmail = demo.email
+                profile = p
             }
             isUnlocked = true
             return
         }
         if args.contains("-demoLocked") {
+            let demo = AppleAccount.demoIdentity()
             if profile == nil {
                 profile = Profile(id: UUID().uuidString, nickname: "林小满",
                                   avatar: Profile.avatars[0],
                                   pinHash: Profile.hash("2468"),
-                                  createdAt: Date())
+                                  createdAt: Date(),
+                                  appleUserID: demo.userID, appleEmail: demo.email)
             }
             isUnlocked = false
             return

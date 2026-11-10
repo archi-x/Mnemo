@@ -74,26 +74,17 @@ struct AppleBindCard: View {
                         .foregroundStyle(Theme.textSub)
                         .lineLimit(1)
                 }
-                Text("这个档案跟着你的 Apple 账号走。换机登录同一个账号，再加 iCloud 存储就能接着练。")
+                Text("忆境只能用 Apple 账号登录。换机登录同一个账号，再加 iCloud 存储就能接着练。")
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textFaint)
                     .lineSpacing(2.5)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Button {
-                    Haptic.tap()
-                    store.unbindApple()
-                } label: {
-                    Text("解除绑定")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.textSub)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(Capsule().fill(Theme.veil(0.06)))
-                }
-                .buttonStyle(ScaleButtonStyle())
+                Text("要换账号，用下面的「退出登录」。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textFaint)
             } else {
-                Text("绑一个 Apple 账号，才能用 iCloud 把记录带到别的设备。训练数据本身仍然只存在你本机或你的 iCloud。")
+                Text("用 Apple 登录才能进入忆境，也才能用 iCloud 把记录带到别的设备。")
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textFaint)
                     .lineSpacing(2.5)

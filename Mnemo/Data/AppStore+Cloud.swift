@@ -100,7 +100,7 @@ extension AppStore {
         persist()
     }
 
-    /// 解除 Apple 绑定，退回本机档案（训练数据不动）
+    /// 解除 Apple 绑定：下次启动会回到登录门（训练数据不动）
     func unbindApple() {
         guard var p = profile else { return }
         p.appleUserID = nil
@@ -122,7 +122,7 @@ extension AppStore {
             // .notFound / 查询失败在模拟器、离线、首次安装时都可能出现，不动档案
             guard state == .revoked else { return }
             unbindApple()
-            cloudNote = "Apple 授权已失效，已退回本机档案"
+            cloudNote = "Apple 授权已失效，请重新登录"
         }
     }
 

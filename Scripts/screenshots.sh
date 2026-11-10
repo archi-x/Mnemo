@@ -63,8 +63,8 @@ capture() {
   sips -g pixelWidth -g pixelHeight "$OUT/$name.png" | tail -2
 }
 
-# 1. 首次进入：建立档案（需要干净数据）
-capture "01-login" -loginName 林小满
+# 1. 首次进入：Apple 登录门（需要干净数据）
+capture "01-login"
 
 # 2. 今日（注入演示数据）
 capture "02-today" -seedDemo -skipLogin -tab today

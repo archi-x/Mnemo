@@ -14,7 +14,7 @@ App Store Connect → App → 版本页 → 「App 预览和截屏」→ **iPhon
 
 | 文件 | 画面 | 首行文案（若要加文字层） |
 | --- | --- | --- |
-| `01-login.png` | 首次进入：品牌、Apple 登录、本机档案表单 | Apple 登录 / 本机二选一，数据可存本机或自己的 iCloud |
+| `01-login.png` | 首次进入：品牌 + 「通过 Apple 继续」+ 三条理由 | 必须先登录才能进入；数据存本机或自己的 iCloud |
 | `02-today.png` | 今日：目标环、按等级推荐、复习队列、错题强化、30 天计划 | 打开就知道今天该练什么 |
 | `03-drill.png` | 训练场：六类关卡 + 最近 7 天 + 进阶玩法 | 六个专项，从编码到提取 |
 | `04-practice.png` | 方法练习 L1：概念配对四选一 | 九种题型，方法真的记住 |
@@ -59,7 +59,7 @@ xcrun simctl create "Mnemo 6.9" \
 | --- | --- |
 | `-seedDemo` | 注入 9 天训练记录、6 张复习卡、4 道错题、7 条闯关成绩 |
 | `-skipLogin` | 跳过登录直接进主界面（仅 DEBUG） |
-| `-loginName 林小满` | 登录页预填昵称 |
+| `-gate` | 清掉 Apple 绑定但保留数据，截「已有记录」的登录门 |
 | `-cloudReady` | 假装 iCloud 可用（截图/联调用） |
 | `-seedApple` | 造一个已绑定 Apple 的档案 |
 | `-demoLocked` | 强制显示解锁页（密码 2468） |

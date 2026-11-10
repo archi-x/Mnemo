@@ -11,6 +11,7 @@ struct ProfileView: View {
     @State private var showReport = false
     @State private var showRank = false
     @State private var showPinSetup = false
+    @State private var showSignOut = false
 
     private var accuracyText: String {
         store.stats.totalItems == 0 ? "—" : "\(Int(store.stats.accuracy * 100))"
@@ -59,6 +60,15 @@ struct ProfileView: View {
             .fullScreenCover(isPresented: $showReport) { ReportView() }
             .fullScreenCover(isPresented: $showRank) { LeaderboardView() }
             .sheet(isPresented: $showPinSetup) { PinSetupSheet() }
+            .confirmationDialog("退出当前 Apple 账号？", isPresented: $showSignOut, titleVisibility: .visible) {
+                Button("退出登录", role: .destructive) {
+                    Haptic.tap()
+                    store.signOut()
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("退出后要重新用 Apple 登录才能进入。打卡、错题、星星都保留着。")
+            }
             .confirmationDialog("清空所有训练数据？", isPresented: $showReset, titleVisibility: .visible) {
                 Button("清空并重置", role: .destructive) {
                     Haptic.failure()
@@ -441,10 +451,10 @@ struct ProfileView: View {
 
             Button {
                 Haptic.tap()
-                store.signOut()
+                showSignOut = true
             } label: {
-                accountRow(symbol: "person.crop.circle.badge.arrow.forward",
-                           title: "切换身份",
+                accountRow(symbol: "rectangle.portrait.and.arrow.right",
+                           title: "退出登录",
                            value: store.profile?.joinedText)
             }
             .buttonStyle(ScaleButtonStyle())

@@ -4,22 +4,14 @@ import SwiftUI
 // MARK: - 档案与解锁
 
 extension AppStore {
-    var needsLogin: Bool { profile == nil || !isUnlocked }
+    /// 是否已经用 Apple 登录过。没有它就不放行，任何内容都看不到。
+    var hasAppleIdentity: Bool { profile?.isAppleAccount == true }
 
-    var isFirstRun: Bool { profile == nil }
+    /// 进入 App 的条件：Apple 身份 + 通过可选的进入密码
+    var needsLogin: Bool { !hasAppleIdentity || !isUnlocked }
 
-    /// 创建档案（首次进入）。pin 传 nil 或空表示不设进入密码。
-    func createProfile(nickname: String, avatar: String, pin: String?) {
-        let trimmed = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleanPin = (pin?.isEmpty == false) ? pin : nil
-        profile = Profile(id: UUID().uuidString,
-                          nickname: trimmed.isEmpty ? "练习者" : trimmed,
-                          avatar: avatar,
-                          pinHash: cleanPin.map(Profile.hash),
-                          createdAt: Date())
-        isUnlocked = true
-        persist()
-    }
+    /// 还停在 Apple 登录这一步（档案可能已经有，只是没绑 Apple）
+    var needsAppleLogin: Bool { !hasAppleIdentity }
 
     /// 校验密码并解锁
     @discardableResult
@@ -68,9 +60,14 @@ extension AppStore {
         isUnlocked = false
     }
 
-    /// 退出当前档案（保留训练数据，只清身份）
+    /// 退出登录：只断开 Apple 身份，档案与训练数据都留着。
+    /// 下次用同一个账号登录时 `signInWithApple` 会把它重新绑上，昵称、头像、进度都还在。
     func signOut() {
-        profile = nil
+        if var p = profile {
+            p.appleUserID = nil
+            p.appleEmail = nil
+            profile = p
+        }
         isUnlocked = false
         persist()
     }

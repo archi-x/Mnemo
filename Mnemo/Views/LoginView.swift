@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 // MARK: - 数字键盘
 
@@ -127,21 +128,15 @@ struct LoginView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.colorScheme) private var scheme
 
-    @State private var nickname = ""
-    @State private var avatar = Profile.avatars[0]
     @State private var pin = ""
     @State private var shake: CGFloat = 0
     @State private var errorText: String?
     @State private var appleError: String?
-    @State private var appeared = false
-    @FocusState private var nameFocused: Bool
 
-    private var isCreate: Bool { store.profile == nil }
-    /// 昵称留空时用默认名，按钮始终可点
-    private var resolvedName: String {
-        let t = nickname.trimmingCharacters(in: .whitespaces)
-        return t.isEmpty ? "练习者" : t
-    }
+    /// 没有 Apple 身份就不放行：这是进入 App 的唯一入口
+    private var needsApple: Bool { !store.hasAppleIdentity }
+    /// 这台设备上已经有本地记录（老版本建的档案），登录后接上
+    private var hasLocalRecord: Bool { store.profile != nil }
 
     var body: some View {
         ZStack {
@@ -151,16 +146,12 @@ struct LoginView: View {
             GeometryReader { geo in
                 ScrollView {
                     VStack(spacing: 0) {
-                        if isCreate {
-                            createContent
+                        if needsApple {
+                            appleGate
                         } else {
                             unlockContent
                         }
                         Spacer(minLength: 18)
-                        if isCreate {
-                            featureRow
-                                .padding(.bottom, 22)
-                        }
                         localNote
                             .padding(.bottom, 14)
                     }
@@ -171,19 +162,18 @@ struct LoginView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
+        .onChange(of: store.needsAppleLogin) { _, needs in
+            if needs { appleError = nil }
+        }
         .onAppear {
-            guard !appeared else { return }
-            appeared = true
             #if DEBUG
-            if let i = ProcessInfo.processInfo.arguments.firstIndex(of: "-loginName"),
-               i + 1 < ProcessInfo.processInfo.arguments.count {
-                nickname = ProcessInfo.processInfo.arguments[i + 1]
-                return
+            // 联调：走一遍「按钮回调 → 建档 → 进入主界面」，不用真的点（模拟器没有签名能力）
+            if ProcessInfo.processInfo.arguments.contains("-autoApple"), needsApple {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    store.signInWithApple(AppleAccount.demoIdentity())
+                }
             }
             #endif
-            if isCreate {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { nameFocused = true }
-            }
         }
     }
 
@@ -205,11 +195,11 @@ struct LoginView: View {
         .allowsHitTesting(false)
     }
 
-    // MARK: 首次进入：建立档案
+    // MARK: 必须先过 Apple 登录
 
-    private var createContent: some View {
+    private var appleGate: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 22)
+            Spacer(minLength: 24)
 
             LoginBrand()
 
@@ -219,96 +209,86 @@ struct LoginView: View {
                 .padding(.top, 16)
 
             VStack(spacing: 9) {
-                AppleSignInButton(style: store.appearance == .night ? .white
-                                  : store.appearance == .day ? .black
-                                  : (scheme == .dark ? .white : .black)) { identity in
+                AppleSignInButton(style: store.appleButtonStyle(for: scheme)) { identity in
                     appleError = nil
                     store.signInWithApple(identity)
                 } onError: { message in
                     withAnimation(.easeInOut(duration: 0.2)) { appleError = message }
                 }
-                Text(appleError ?? "用 Apple 登录 · 记录默认存进你的 iCloud，换设备接着练")
+                Text(appleError ?? "用 Apple 登录后进入 · 记录存进你自己的 iCloud")
                     .font(.system(size: 11))
-                    .foregroundStyle(appleError == nil ? Theme.textFaint : Theme.danger.opacity(0.9))
+                    .foregroundStyle(appleError == nil ? Theme.textSub : Theme.danger.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 6)
             }
-            .padding(.top, 22)
+            .padding(.top, 24)
 
-            orDivider
-                .padding(.top, 20)
-
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("建立训练档案")
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(Theme.text)
-                    Text("不注册也能用；想换设备时，在「我的 → 数据存储」里打开 iCloud。")
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(Theme.textSub)
-                }
-
-                HStack(spacing: 10) {
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Theme.textFaint)
-                    TextField("", text: $nickname, prompt: Text("给自己起个名字").foregroundStyle(Theme.textFaint))
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Theme.text)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .submitLabel(.done)
-                        .focused($nameFocused)
-                        .onSubmit { submit() }
-                }
-                .padding(.horizontal, 15)
-                .padding(.vertical, 14)
-                .glass(radius: 15)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("选个头像")
-                        .font(.system(size: 11.5, weight: .medium))
-                        .foregroundStyle(Theme.textFaint)
-                    HStack(spacing: 10) {
-                        ForEach(Profile.avatars, id: \.self) { symbol in
-                            avatarButton(symbol)
-                        }
-                    }
-                }
+            if hasLocalRecord {
+                localRecordNote
+                    .padding(.top, 16)
             }
-            .padding(18)
-            .glass(radius: 22)
-            .padding(.top, 18)
 
-            VStack(spacing: 10) {
-                PrimaryButton(title: "进入忆境", symbol: "arrow.right") { submit() }
-
-                Button {
-                    Haptic.tap()
-                    store.createProfile(nickname: "访客", avatar: Profile.avatars[2], pin: nil)
-                } label: {
-                    Text("先用访客身份逛逛")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Theme.textSub)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(ScaleButtonStyle())
+            VStack(alignment: .leading, spacing: 11) {
+                reasonRow(symbol: "apple.logo",
+                          text: "Apple 只用来确认「你是你」，姓名与邮箱留在本机，不经过我们的服务器")
+                reasonRow(symbol: "icloud.fill",
+                          text: "训练记录默认写进你自己的 iCloud，换台手机登录同一个账号就能接着练")
+                reasonRow(symbol: "lock.shield.fill",
+                          text: "不订阅、不投放广告，也不需要再填一张注册表")
             }
             .padding(.top, 22)
+
+            Spacer(minLength: 16)
+
+            featureRow
+                .padding(.bottom, 20)
         }
     }
 
-    /// 「或 在本机开始」
-    private var orDivider: some View {
-        HStack(spacing: 10) {
-            Rectangle().fill(Theme.stroke).frame(height: 1)
-            Text("或 在本机开始")
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize()
-            Rectangle().fill(Theme.stroke).frame(height: 1)
+    /// 老版本留下的本机记录：先说清楚登录不会丢数据，再让人点按钮
+    private var localRecordNote: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "internaldrive.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.accent)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("这台设备上已有训练记录")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.text)
+                Text("用 Apple 登录后会自动接上，打卡、错题、星星都不会丢。")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSub)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(13)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                .fill(Theme.accent.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                        .strokeBorder(Theme.accent.opacity(0.22), lineWidth: 1)
+                )
+        )
+    }
+
+    private func reasonRow(symbol: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.accent.opacity(0.9))
+                .frame(width: 18)
+            Text(text)
+                .font(.system(size: 11.5))
+                .foregroundStyle(Theme.textSub)
+                .lineSpacing(2.5)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -345,28 +325,6 @@ struct LoginView: View {
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private func avatarButton(_ symbol: String) -> some View {
-        let selected = avatar == symbol
-        return Button {
-            Haptic.select()
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { avatar = symbol }
-        } label: {
-            Image(systemName: symbol)
-                .font(.system(size: 19, weight: .medium))
-                .foregroundStyle(selected ? Theme.onAccent : Theme.textSub)
-                .frame(width: 54, height: 54)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(selected ? Theme.accent : Theme.veil(0.055))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(selected ? Color.clear : Theme.veil(0.08), lineWidth: 1)
-                        )
-                )
-        }
-        .buttonStyle(ScaleButtonStyle())
     }
 
     // MARK: 已设密码：解锁
@@ -420,7 +378,7 @@ struct LoginView: View {
                 Haptic.tap()
                 store.signOut()
             } label: {
-                Text("切换身份")
+                Text("退出登录")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSub)
                     .padding(.vertical, 10)
@@ -437,7 +395,7 @@ struct LoginView: View {
         HStack(spacing: 6) {
             Image(systemName: "lock.shield.fill")
                 .font(.system(size: 10.5))
-            Text("本机或 iCloud · 不经过我们的服务器 · 无广告")
+            Text("Apple 登录 · 记录在本机或你的 iCloud · 无广告")
                 .font(.system(size: 11))
         }
         .foregroundStyle(Theme.textFaint)
@@ -474,10 +432,6 @@ struct LoginView: View {
         }
     }
 
-    private func submit() {
-        Haptic.success()
-        store.createProfile(nickname: resolvedName, avatar: avatar, pin: nil)
-    }
 }
 
 // MARK: - 设置进入密码
@@ -524,7 +478,7 @@ struct PinSetupSheet: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.text)
                 Text(step == 1
-                     ? "每次打开忆境时用它解锁，忘记只能清空本机档案。"
+                     ? "每次打开忆境时用它解锁。忘记密码只能清空训练数据重新开始。"
                      : "两次输入需要一致。")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textSub)
