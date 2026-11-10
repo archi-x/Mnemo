@@ -20,9 +20,18 @@ final class AppStore: ObservableObject {
     @Published var questStars: [String: Int] = [:]
     @Published var profile: Profile?
     @Published var appearance: Appearance = .night
+    /// 数据放哪：本机 / iCloud（用户随时可切）
+    @Published var storageMode: StorageMode = .local
+    /// 最近一次成功推到 iCloud 的时间
+    @Published var lastSyncedAt: Date?
+    /// 同步遇到问题时的说明（配额超限等）
+    @Published var cloudNote: String?
     @Published var isUnlocked = false
     @Published var pendingLevelUp: Int?
     @Published var snapshotVersion = 0
+
+    /// 本机文件里那份快照的时间戳，用来和 iCloud 比较谁新
+    var lastLocalSave: Date?
 
     /// 串行写盘队列：保证写入顺序，避免旧快照覆盖新快照
     private let saveQueue = DispatchQueue(label: "com.tal.mnemo.persist", qos: .utility)
@@ -30,9 +39,16 @@ final class AppStore: ObservableObject {
     init() {
         catalog = Self.loadCatalog()
         words = Self.loadWords()
+        CloudStore.prepare()
         load()
         seedDefaultGoals()
         restoreSession()
+        startCloudObservers()
+        verifyAppleCredential()
+        // 上次已经选了 iCloud、这次启动还没同步过（换机后第一次打开就是这个状态）：补一次上传
+        if storageMode == .iCloud, CloudStore.isAvailable, lastSyncedAt == nil {
+            persist()
+        }
     }
 
     /// 启动时的解锁策略：没有档案 → 登录页；有档案且设了密码 → 锁屏；否则直接进入
@@ -44,6 +60,20 @@ final class AppStore: ObservableObject {
         if args.contains("-autoTheme") { appearance = .auto }
         #endif
         #if DEBUG
+        // 截图/联调用：假装 iCloud 已可用，并造一个 Apple 档案
+        if args.contains("-cloudReady"), storageMode == .local { storageMode = .iCloud }
+        if args.contains("-seedApple") {
+            let id = AppleAccount.demoIdentity()
+            if var p = profile {
+                p.appleUserID = id.userID
+                p.appleEmail = id.email
+                profile = p
+            } else {
+                profile = Profile(id: UUID().uuidString, nickname: id.name ?? "练习者",
+                                  avatar: Profile.avatars[0], pinHash: nil, createdAt: Date(),
+                                  appleUserID: id.userID, appleEmail: id.email)
+            }
+        }
         if args.contains("-skipLogin") {
             if profile == nil {
                 profile = Profile(id: UUID().uuidString, nickname: "林小满",
@@ -223,7 +253,7 @@ final class AppStore: ObservableObject {
 
     // MARK: 持久化
 
-    private struct Snapshot: Codable {
+    struct Snapshot: Codable {
         var cards: [ReviewCard]
         var stats: Stats
         var best: [String: Double]
@@ -239,10 +269,14 @@ final class AppStore: ObservableObject {
         var questStars: [String: Int]
         var profile: Profile?
         var appearance: Appearance
+        /// 这份快照写出去的时间，用来和 iCloud 上那份比谁新
+        var savedAt: Date?
+        var storageMode: StorageMode
 
         enum CodingKeys: String, CodingKey {
             case cards, stats, best, records, learnedMethods, completedPlanDays, wrongItems, dayStats
             case xp, xpByDay, goals, methodStats, questStars, profile, appearance
+            case savedAt, storageMode
         }
 
         init(cards: [ReviewCard], stats: Stats, best: [String: Double], records: [DrillRecord],
@@ -250,7 +284,10 @@ final class AppStore: ObservableObject {
              wrongItems: [WrongItem], dayStats: [String: DayStat],
              xp: Int, xpByDay: [String: Int], goals: [Goal],
              methodStats: [String: DayStat], questStars: [String: Int], profile: Profile?,
-             appearance: Appearance) {
+             appearance: Appearance,
+             savedAt: Date? = nil, storageMode: StorageMode = .local) {
+            self.savedAt = savedAt
+            self.storageMode = storageMode
             self.cards = cards
             self.stats = stats
             self.best = best
@@ -286,17 +323,29 @@ final class AppStore: ObservableObject {
             questStars = try c.decodeIfPresent([String: Int].self, forKey: .questStars) ?? [:]
             profile = try c.decodeIfPresent(Profile.self, forKey: .profile)
             appearance = try c.decodeIfPresent(Appearance.self, forKey: .appearance) ?? .night
+            savedAt = try c.decodeIfPresent(Date.self, forKey: .savedAt)
+            storageMode = try c.decodeIfPresent(StorageMode.self, forKey: .storageMode) ?? .local
         }
     }
 
-    private var fileURL: URL {
+    var fileURL: URL {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         return dir.appendingPathComponent("mnemo_state.json")
     }
 
     private func load() {
-        guard let data = try? Data(contentsOf: fileURL),
-              let snap = try? JSONDecoder().decode(Snapshot.self, from: data) else { return }
+        if let data = try? Data(contentsOf: fileURL),
+           let snap = try? JSONDecoder().decode(Snapshot.self, from: data) {
+            apply(snap)
+        }
+        // 换设备后第一次打开：iCloud 上那份更新就以它为准
+        if storageMode == .iCloud, CloudStore.isAvailable {
+            _ = adoptCloudIfNewer()
+        }
+    }
+
+    /// 把一份快照灌进内存（本机与 iCloud 共用同一入口）
+    func apply(_ snap: Snapshot) {
         cards = snap.cards
         stats = snap.stats
         best = snap.best
@@ -312,9 +361,12 @@ final class AppStore: ObservableObject {
         questStars = snap.questStars
         profile = snap.profile
         appearance = snap.appearance
+        storageMode = snap.storageMode
+        lastLocalSave = snap.savedAt
     }
 
     func persist() {
+        let now = Date()
         let snap = Snapshot(cards: cards, stats: stats, best: best, records: records,
                             learnedMethods: Array(learnedMethods),
                             completedPlanDays: Array(completedPlanDays),
@@ -324,13 +376,35 @@ final class AppStore: ObservableObject {
                             methodStats: methodStats,
                             questStars: questStars,
                             profile: profile,
-                            appearance: appearance)
+                            appearance: appearance,
+                            savedAt: now,
+                            storageMode: storageMode)
+        writeLocal(snap)
+        uploadToCloudIfNeeded(snap)
+        snapshotVersion &+= 1
+    }
+
+    /// 只写本机。iCloud 上那份被采纳时也要走这里，离线才有数据可读。
+    func writeLocal(_ snap: Snapshot) {
         let url = fileURL
         saveQueue.async {
             guard let data = try? JSONEncoder().encode(snap) else { return }
             try? data.write(to: url, options: .atomic)
         }
-        snapshotVersion &+= 1
+        lastLocalSave = snap.savedAt
+    }
+
+    /// 选了 iCloud 时每次改动都推一份；压缩后仍超配额就只留本机，并在界面上说清
+    private func uploadToCloudIfNeeded(_ snap: Snapshot) {
+        guard storageMode == .iCloud, CloudStore.isAvailable else { return }
+        guard let data = try? JSONEncoder().encode(snap) else { return }
+        let stamp = snap.savedAt ?? Date()
+        if CloudStore.save(data, savedAt: stamp) {
+            lastSyncedAt = stamp
+            cloudNote = nil
+        } else {
+            cloudNote = "数据超过 iCloud 单份上限，已只保留在本机"
+        }
     }
 
     // MARK: 出题

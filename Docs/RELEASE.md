@@ -15,7 +15,10 @@ https://developer.apple.com/programs/ —— 个人账号 99 美元/年，审核
 developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → 新建：
 
 - Bundle ID：`com.tal.mnemo`（必须与工程一致，想换就同时改 `project.pbxproj` 里的 `PRODUCT_BUNDLE_IDENTIFIER`）
-- Capabilities：不需要额外开启，本 App 不联网、不采集数据
+- Capabilities（**v9 起必开这两项**，否则 Apple 登录按钮会报错、iCloud 状态一直不可用）：
+  - **Sign in with Apple**（勾上后 App ID 变成 Primary App ID）
+  - **iCloud → 勾选 Key-value storage**（本 App 只用一个 KV 容器，不需要 CloudKit）
+- 改完 capability 要**重新生成 Provisioning Profile**，或让 `release.sh` 的 `-allowProvisioningUpdates` 自动拉一次
 
 ## 3. 创建 App 记录
 
@@ -29,7 +32,11 @@ App Store Connect → App → 新建 App：
 | Bundle ID | com.tal.mnemo |
 | SKU | 随意，如 `mnemo-001` |
 
-TestFlight 阶段不要求截图和隐私政策，但"App 隐私"问卷必须填一次：全选「不收集数据」即可（本 App 数据只存本地）。
+TestFlight 阶段不要求截图和隐私政策，但"App 隐私"问卷必须填一次：
+
+- 身份：可以勾「通过 Apple 登录」——我们只在本机保存 Apple 返回的用户标识与转发邮箱，**不上传服务器**，不构成"收集"。
+- 其余全部「不收集」：训练数据只写入本机的 `Documents/mnemo_state.json`，或用户自己 Apple 账号下的 iCloud KV 空间。
+- 提交时若被问到用途说明，可直接写：Apple 登录仅用于建立本地训练档案；iCloud 仅用于用户自己跨设备同步。
 
 ## 4. 生成 App Store Connect API Key
 

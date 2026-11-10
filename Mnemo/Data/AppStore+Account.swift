@@ -75,11 +75,16 @@ extension AppStore {
         persist()
     }
 
-    /// 忘记密码：清空档案与本机训练数据
+    /// 忘记密码：清空档案与本机训练数据（选了 iCloud 的话，云上那份一并清掉）
     func eraseAccountAndData() {
         profile = nil
         isUnlocked = false
         resetAll()
+        CloudStore.clear()
+        storageMode = .local
+        lastSyncedAt = nil
+        cloudNote = nil
+        persist()
     }
 
     /// 切换外观：深夜 / 白天 / 跟随系统

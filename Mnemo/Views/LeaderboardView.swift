@@ -141,7 +141,7 @@ struct LeaderboardView: View {
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textSub)
             }
-            Text("这是离线模拟的同级别参照榜：同伴按你的等级段和本周 XP 区间生成，只用于判断自己的相对位置。App 不联网、不上传任何训练数据，也没有真实用户排行。等你练到更高等级，榜单会换成那个等级段的对手。")
+            Text("这是离线模拟的同级别参照榜：同伴按你的等级段和本周 XP 区间生成，只用于判断自己的相对位置。榜单不联网、没有真实用户排行；训练数据只在你本机或你自己的 iCloud 里。等你练到更高等级，榜单会换成那个等级段的对手。")
                 .font(.system(size: 11.5))
                 .foregroundStyle(Theme.textFaint)
                 .lineSpacing(3)

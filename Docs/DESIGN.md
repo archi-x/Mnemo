@@ -35,7 +35,7 @@
 
 ### 0. 登录 / 本机档案
 
-没有账号体系，登录在这里是"建立本机身份"：
+（v9 起可选「通过 Apple 登录」，见第十三节。）登录在这里首先是"建立本机身份"：
 
 `品牌头(同心圆环 + 忆字) → 昵称 → 4 个符号头像(脑/书/星/月) → 进入忆境 / 先用访客身份逛逛`
 
@@ -296,3 +296,76 @@
 ### 5. 调试参数
 
 `-scrollTo demo` 滚到三例区顶部，`-scrollTo demo-2` / `demo-3` 直达第二、三例，配合 `-tab library -method 1` 使用。
+
+## 十三、v9：Apple 登录与可选的 iCloud 存储
+
+原来只有一个「本机档案」，换机就等于从零开始。这一版补两件事：**身份可以绑 Apple**，**数据可以放 iCloud**，
+但两者都不强制——不登录也能用，登录了也能继续只存本机。
+
+### 1. 三种组合都允许
+
+| 身份 | 存储 | 说明 |
+| --- | --- | --- |
+| 本机档案 | 本机 | 默认。全程不联网，和前几版完全一致 |
+| 本机档案 | iCloud | 可以不登录 Apple 也开 iCloud（跟着系统的 Apple 账号走），换机后档案是新的，训练数据是旧的 |
+| Apple 档案 | iCloud | 推荐路径：Apple 登录后默认打开 iCloud，换机登录同一个 Apple 账号就能接着练 |
+
+### 2. 身份：Sign in with Apple
+
+- 首次进入页最上面一条 `SignInWithAppleButton`（`.continue`，请求 `fullName` + `email`），下面是「或 在本机开始」的原有表单。
+- 只取三样：`user`（稳定标识）、`fullName`（只有第一次授权返回）、`email`（可能是 `@privaterelay.appleid.com` 转发地址）。
+  姓名在第一次拿到时就写进档案昵称，之后不再依赖 Apple 返回。
+- 启动时查一次凭证状态：**只有 `.revoked` 才解除绑定**。`.notFound` / 查询失败在模拟器、离线、首装都会出现，
+  这时把绑定摘掉会造成「明明授权了却显示未绑定」，所以选择不动档案。
+- 解除绑定只清 `appleUserID / appleEmail`，训练数据、密码、星星全部保留。
+
+### 3. 存储：为什么是 KV 而不是 CloudKit
+
+整份状态本来就是一个 JSON 快照（卡片、错题、星星、档案全在里面）。用 `NSUbiquitousKeyValueStore`
+存一份 zlib + base64 压缩后的快照，是最小改动：
+
+- 不需要在 CloudKit 里建 record 类型、不需要迁移字段；
+- 1MB 配额对这个量级够用（演示数据 9.6KB，压缩后约 3KB），代码里设了 620KB 的写入上限，超了只留本机并提示；
+- 冲突语义刻意简单：**谁新用谁**（比 `savedAt`），不做字段级合并。这是「一个人、一台主力机、偶尔换机」场景下的正确取舍，
+  写进代码注释与界面说明里，不假装是多端协同。
+
+数据流：
+
+```
+改动 → persist() ─┬─ 本机 Documents/mnemo_state.json（永远写）
+                  └─ 若 storageMode == .iCloud：CloudStore.save(压缩快照, savedAt)
+启动 → 读本机 → 若 iCloud 那份 savedAt 更新 → 整体采纳并回写本机
+前台 → 监听 didChangeExternally / NSUbiquityIdentityDidChange → 同上
+```
+
+切换位置不删数据：切到 iCloud 先看云上有没有更新的（有就取回），再把当前状态推上去；切回本机只是停止上传，云上那份保留。
+
+### 4. 界面
+
+- 「我的 → 数据存储」一张卡：两个并排按钮（本机 / iCloud）+ 状态行（绿点已同步 · 时间 / 红点不可用原因 / 琥珀点配额提示）
+  + iCloud 模式下的「立即同步」+ 一句「切换不会删数据」。
+- iCloud 不可用时按钮置灰，状态行直接说下一步（先登录 Apple 账号、确认 App 有 iCloud 权限）。
+- 「账号与安全」里 Apple 卡：已绑定显示转发邮箱 + 解除绑定，未绑定显示官方按钮，文案说明「绑了才能跨设备」。
+- Apple 按钮配色：深夜主题给 `.white`，白天给 `.black`。系统按钮不吃我们的动态色令牌，
+  只靠 `colorScheme` 推断在自定义主题下会翻车，所以显式按 `appearance` 传。
+
+### 5. 能力与 entitlements
+
+`Mnemo/Mnemo.entitlements`：
+
+- `com.apple.developer.applesignin = ["Default"]`
+- `com.apple.developer.ubiquity-kvstore-identifier = $(TeamIdentifierPrefix)$(CFBundleIdentifier)`
+
+工程里两个配置都加了 `CODE_SIGN_ENTITLEMENTS`。真机上还需要在开发者后台给 App ID 勾上
+**Sign in with Apple** 与 **iCloud → Key-value storage**，重新生成描述文件（见 `Docs/RELEASE.md`）。
+模拟器无有效 entitlement 时：登录按钮会报「这台设备暂时无法完成 Apple 登录」，
+iCloud 状态显示不可用，但所有本机功能照常。
+
+### 6. 调试参数
+
+| 参数 | 作用 |
+| --- | --- |
+| `-cloudReady` | 假装 iCloud 可用（读写落到 UserDefaults），用来验证整条链路与界面 |
+| `-seedApple` | 造一个已绑定的 Apple 档案（含私密转发邮箱），并跳过启动时的凭证校验 |
+| `-storageSelfTest` | 跑 8 项断言（切云、上传、云上更新被采纳、回写本机、切回本机），结果写 `Documents/storage_selftest.txt` |
+| `-scrollTo storage` / `account` | 「我的」页直达数据存储 / 账号区 |

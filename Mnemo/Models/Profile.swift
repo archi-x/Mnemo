@@ -1,16 +1,26 @@
 import Foundation
 import CryptoKit
 
-/// 本机训练档案。没有账号体系，所有字段只写在本机 JSON 里。
+/// 训练档案。可以是「本机档案」，也可以绑一个 Apple 账号（Sign in with Apple）。
+/// 无论哪种，数据都只写在本机文件或用户自己的 iCloud 里，不上我们的服务器。
 struct Profile: Codable, Equatable {
     var id: String
     var nickname: String
     var avatar: String
     var pinHash: String?
     var createdAt: Date
+    /// Sign in with Apple 的用户标识；为空表示这是个本机档案
+    var appleUserID: String? = nil
+    /// Apple 返回的邮箱，可能是 @privaterelay.appleid.com 的转发地址
+    var appleEmail: String? = nil
 
     /// 可选头像（SF Symbol）
     static let avatars: [String] = ["brain.head.profile", "book.closed.fill", "sparkles", "moon.stars.fill"]
+
+    var isAppleAccount: Bool {
+        guard let appleUserID else { return false }
+        return !appleUserID.isEmpty
+    }
 
     var hasPin: Bool {
         guard let pinHash else { return false }

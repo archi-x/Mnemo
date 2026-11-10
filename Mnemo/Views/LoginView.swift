@@ -125,12 +125,14 @@ private struct LoginBrand: View {
 
 struct LoginView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.colorScheme) private var scheme
 
     @State private var nickname = ""
     @State private var avatar = Profile.avatars[0]
     @State private var pin = ""
     @State private var shake: CGFloat = 0
     @State private var errorText: String?
+    @State private var appleError: String?
     @State private var appeared = false
     @FocusState private var nameFocused: Bool
 
@@ -216,12 +218,34 @@ struct LoginView: View {
                 .foregroundStyle(Theme.textSub)
                 .padding(.top, 16)
 
+            VStack(spacing: 9) {
+                AppleSignInButton(style: store.appearance == .night ? .white
+                                  : store.appearance == .day ? .black
+                                  : (scheme == .dark ? .white : .black)) { identity in
+                    appleError = nil
+                    store.signInWithApple(identity)
+                } onError: { message in
+                    withAnimation(.easeInOut(duration: 0.2)) { appleError = message }
+                }
+                Text(appleError ?? "用 Apple 登录 · 记录默认存进你的 iCloud，换设备接着练")
+                    .font(.system(size: 11))
+                    .foregroundStyle(appleError == nil ? Theme.textFaint : Theme.danger.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 6)
+            }
+            .padding(.top, 22)
+
+            orDivider
+                .padding(.top, 20)
+
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("建立训练档案")
                         .font(.system(size: 19, weight: .semibold))
                         .foregroundStyle(Theme.text)
-                    Text("档案只写在这台设备，不联网，也不会上传。")
+                    Text("不注册也能用；想换设备时，在「我的 → 数据存储」里打开 iCloud。")
                         .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSub)
                 }
@@ -256,7 +280,7 @@ struct LoginView: View {
             }
             .padding(18)
             .glass(radius: 22)
-            .padding(.top, 24)
+            .padding(.top, 18)
 
             VStack(spacing: 10) {
                 PrimaryButton(title: "进入忆境", symbol: "arrow.right") { submit() }
@@ -273,6 +297,18 @@ struct LoginView: View {
                 .buttonStyle(ScaleButtonStyle())
             }
             .padding(.top, 22)
+        }
+    }
+
+    /// 「或 在本机开始」
+    private var orDivider: some View {
+        HStack(spacing: 10) {
+            Rectangle().fill(Theme.stroke).frame(height: 1)
+            Text("或 在本机开始")
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize()
+            Rectangle().fill(Theme.stroke).frame(height: 1)
         }
     }
 
@@ -401,7 +437,7 @@ struct LoginView: View {
         HStack(spacing: 6) {
             Image(systemName: "lock.shield.fill")
                 .font(.system(size: 10.5))
-            Text("本地存储 · 无需注册 · 无广告")
+            Text("本机或 iCloud · 不经过我们的服务器 · 无广告")
                 .font(.system(size: 11))
         }
         .foregroundStyle(Theme.textFaint)

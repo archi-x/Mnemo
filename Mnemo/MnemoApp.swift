@@ -5,6 +5,9 @@ struct MnemoApp: App {
     @StateObject private var store: AppStore = {
         let s = AppStore()
         s.seedDemoIfNeeded()
+        #if DEBUG
+        StorageSelfTest.runIfRequested(s)
+        #endif
         return s
     }()
 

@@ -18,6 +18,7 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
@@ -28,6 +29,7 @@ struct ProfileView: View {
                     planCard
                     badgeSection
                     appearanceSection
+                    storageSection
                     accountSection
                     resetRow
                 }
@@ -35,6 +37,19 @@ struct ProfileView: View {
                 .padding(.bottom, 26)
             }
             .scrollIndicators(.hidden)
+            #if DEBUG
+            .onAppear {
+                let args = ProcessInfo.processInfo.arguments
+                if let i = args.firstIndex(of: "-scrollTo"), i + 1 < args.count {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            proxy.scrollTo(args[i + 1], anchor: .top)
+                        }
+                    }
+                }
+            }
+            #endif
+            }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showCalendar) { CalendarView() }
             .fullScreenCover(isPresented: $showWrongBook) { WrongBookView() }
@@ -386,7 +401,23 @@ struct ProfileView: View {
         .glass(radius: 18)
     }
 
+    private var storageSection: some View {
+        StorageCard()
+            .id("storage")
+    }
+
     private var accountSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("账号与安全")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Theme.text)
+            AppleBindCard()
+            rowsGroup
+        }
+        .id("account")
+    }
+
+    private var rowsGroup: some View {
         VStack(spacing: 8) {
             Button {
                 Haptic.tap()
