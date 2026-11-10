@@ -183,7 +183,9 @@ struct ProfileView: View {
     }
 
     private var entryRows: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 9) {
+            SectionHeader(title: "更多")
+            VStack(spacing: 8) {
             entryRow(symbol: "repeat.circle.fill", tint: Theme.tint("review"),
                      title: "错题本",
                      detail: store.wrongItems.isEmpty ? "答错的题会自动收进来" : "\(store.wrongItems.count) 题待强化") {
@@ -213,6 +215,7 @@ struct ProfileView: View {
                      title: "同级别排名",
                      detail: "同级第 \(store.myRank().rank)/\(store.myRank().total) 名 · 超过 \(store.myRank().percentile)%") {
                 showRank = true
+            }
             }
         }
     }

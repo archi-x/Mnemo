@@ -31,6 +31,7 @@ struct ReviewSessionView: View {
                 }
             }
         }
+        .hidesTabBar()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

@@ -103,16 +103,35 @@ struct MethodPracticeView: View {
                     .background(Capsule().fill(tint.opacity(0.12)))
                 }
 
+                TipCard(title: "这一阶怎么算过关",
+                        tint: tint,
+                        lines: [
+                            TipLine("checkmark.seal", "5 道题一阶：答完立刻看解析，全对才算这一阶拿满"),
+                            TipLine("arrow.uturn.left", "答错不丢：错题进错题本，同时生成 20 分钟后到期的复习卡"),
+                            TipLine("clock", "一阶约两分钟：碎片时间练完一阶，比周末集中刷更牢")
+                        ])
+            }
+            .padding(.horizontal, 22)
+            .padding(.bottom, 18)
+        }
+        .scrollIndicators(.hidden)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
                 PrimaryButton(title: "开始 L\(level) 练习", symbol: "play.fill", tint: tint) {
                     exercises = store.buildExercises(for: method, level: level)
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { started = true }
                 }
-                .padding(.top, 4)
+                .padding(.horizontal, 22)
+                .padding(.top, 10)
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, 22)
-            .padding(.bottom, 26)
+            .background(
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .overlay(alignment: .top) { Rectangle().fill(Theme.stroke).frame(height: 0.7) }
+                    .ignoresSafeArea(edges: .bottom)
+            )
         }
-        .scrollIndicators(.hidden)
     }
 
     private func levelRow(_ value: Int, _ title: String, detail: String, kinds: String) -> some View {

@@ -8,6 +8,7 @@ struct GoalsView: View {
     @State private var showAdd = false
     @State private var pickKind: Goal.Kind = .dailySessions
     @State private var pickTarget = 3
+    @State private var pendingDelete: Goal?
 
     private var totalProgress: Double {
         guard !store.goals.isEmpty else { return 0 }
@@ -49,6 +50,22 @@ struct GoalsView: View {
                 }
             }
             .sheet(isPresented: $showAdd) { addSheet }
+            .confirmationDialog("删除这个目标？", isPresented: Binding(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            ), titleVisibility: .visible) {
+                Button("删除", role: .destructive) {
+                    if let goal = pendingDelete {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                            store.removeGoal(goal)
+                        }
+                    }
+                    pendingDelete = nil
+                }
+                Button("取消", role: .cancel) { pendingDelete = nil }
+            } message: {
+                Text("只删除这个目标，训练记录和星星都不受影响。")
+            }
         }
     }
 
@@ -130,13 +147,14 @@ struct GoalsView: View {
                 Spacer()
                 Button {
                     Haptic.tap()
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                        store.removeGoal(goal)
-                    }
+                    pendingDelete = goal
                 } label: {
                     Text("删除")
                         .font(.system(size: 11.5))
                         .foregroundStyle(Theme.danger.opacity(0.85))
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 8)
+                        .contentShape(Rectangle())
                 }
             }
         }

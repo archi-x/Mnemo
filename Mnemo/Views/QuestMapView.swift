@@ -98,6 +98,14 @@ struct QuestMapView: View {
             .padding(.vertical, 2)
         }
         .padding(.top, 2)
+        // 右侧渐隐，提示还能横向滑动（高中那格不会被硬切）
+        .mask(alignment: .trailing) {
+            HStack(spacing: 0) {
+                Rectangle().fill(Color.black)
+                LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: 24)
+            }
+        }
     }
 
     // MARK: 玩法卡

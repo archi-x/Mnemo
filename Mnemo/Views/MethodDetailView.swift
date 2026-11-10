@@ -49,6 +49,7 @@ struct MethodDetailView: View {
             bottomBar
         }
         .background(Theme.canvas)
+        .hidesTabBar()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

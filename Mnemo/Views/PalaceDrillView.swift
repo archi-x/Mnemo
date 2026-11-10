@@ -115,15 +115,32 @@ struct PalaceDrillView: View {
                     .buttonStyle(ScaleButtonStyle())
                 }
 
-                PrimaryButton(title: "开始熟悉路线", symbol: "figure.walk", tint: Theme.tint("space")) {
-                    start()
-                }
-                .padding(.top, 6)
+                TipCard(title: "路线怎么选",
+                        tint: Theme.tint("space"),
+                        lines: [
+                            TipLine("figure.walk", "闭眼能走完：选每天都经过的空间，顺序不用背"),
+                            TipLine("mappin.and.ellipse", "位置要具体：沙发、茶几、电视柜，而不是「客厅」"),
+                            TipLine("cube.fill", "一位一物：每个位置只放一个画面，别叠放")
+                        ])
             }
             .padding(.horizontal, 22)
-            .padding(.bottom, 26)
+            .padding(.bottom, 18)
         }
         .scrollIndicators(.hidden)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PrimaryButton(title: "开始熟悉路线", symbol: "figure.walk", tint: Theme.tint("space")) {
+                start()
+            }
+            .padding(.horizontal, 22)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
+            .background(
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .overlay(alignment: .top) { Rectangle().fill(Theme.stroke).frame(height: 0.7) }
+                    .ignoresSafeArea(edges: .bottom)
+            )
+        }
     }
 
     // MARK: 熟悉路线

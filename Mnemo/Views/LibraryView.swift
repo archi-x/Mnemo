@@ -158,6 +158,14 @@ struct LibraryView: View {
             .padding(.vertical, 2)
         }
         .scrollIndicators(.hidden)
+        // 右侧留一道渐隐，暗示这一排还能横向滑动，而不是被裁掉
+        .mask(alignment: .trailing) {
+            HStack(spacing: 0) {
+                Rectangle().fill(Color.black)
+                LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: 22)
+            }
+        }
     }
 
     private func chip(_ title: String, id: String?, count: Int) -> some View {

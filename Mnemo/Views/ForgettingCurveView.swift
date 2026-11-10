@@ -92,6 +92,9 @@ struct ForgettingCurveView: View {
                 legendDot("不复习", color: Theme.danger.opacity(0.8))
                 legendDot("按阶梯复习", color: Theme.success)
                 Spacer()
+                Text("纵轴 0–100%")
+                    .font(.system(size: 9.5))
+                    .foregroundStyle(Theme.textFaint)
             }
             Chart {
                 ForEach(decayPoints) { p in
@@ -117,20 +120,14 @@ struct ForgettingCurveView: View {
             .chartForegroundStyleScale(["不复习": Theme.danger.opacity(0.8), "按阶梯复习": Theme.success])
             .chartLegend(.hidden)
             .chartYScale(domain: 0...1.05)
+            .chartXScale(domain: 0...32)
             .chartYAxis {
-                AxisMarks(values: [0, 0.5, 1]) { value in
+                AxisMarks(values: [0, 0.5, 1]) { _ in
                     AxisGridLine().foregroundStyle(Theme.veil(0.06))
-                    AxisValueLabel {
-                        if let v = value.as(Double.self) {
-                            Text("\(Int(v * 100))%")
-                                .font(.system(size: 9.5))
-                                .foregroundStyle(Theme.textFaint)
-                        }
-                    }
                 }
             }
             .chartXAxis {
-                AxisMarks(values: [0, 1, 2, 4, 7, 15, 30]) { value in
+                AxisMarks(values: [0, 7, 15, 30]) { value in
                     AxisValueLabel {
                         if let v = value.as(Double.self) {
                             Text(v == 0 ? "学完" : "\(Int(v)) 天")
@@ -200,29 +197,28 @@ struct ForgettingCurveView: View {
             Text("新学的卡片按这条阶梯排期，答得越稳，下一次间隔越长。")
                 .font(.system(size: 11.5))
                 .foregroundStyle(Theme.textSub)
-            ScrollView(.horizontal) {
-                HStack(spacing: 6) {
-                    ForEach(ReviewLadder.steps) { s in
-                        VStack(spacing: 3) {
-                            Text(s.title)
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                                .monospacedDigit()
-                                .foregroundStyle(Theme.text)
-                            Text("第\(s.index + 1)次")
-                                .font(.system(size: 9))
-                                .foregroundStyle(Theme.textFaint)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                .fill(Theme.accent.opacity(0.10 + Double(s.index) * 0.012))
-                        )
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3),
+                      spacing: 6) {
+                ForEach(ReviewLadder.steps) { s in
+                    VStack(spacing: 3) {
+                        Text(s.title)
+                            .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(Theme.text)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                        Text("第\(s.index + 1)次")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Theme.textFaint)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 9)
+                    .background(
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            .fill(Theme.accent.opacity(0.10 + Double(s.index) * 0.012))
+                    )
                 }
-                .padding(.vertical, 2)
             }
-            .scrollIndicators(.hidden)
         }
         .padding(15)
         .glass(radius: 20)

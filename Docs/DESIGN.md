@@ -391,3 +391,58 @@ iCloud 状态显示不可用，但所有本机功能照常。
 
 老数据兼容：`signInWithApple` 原本就会在 `profile` 已存在时只补 `appleUserID / appleEmail`，
 所以老用户打开新版看到的是登录门（带记录提示），登录完直接回到原来的进度，不需要迁移脚本。
+
+## 十五、v11：逐屏复查后的排版收敛
+
+登录门做完之后又整体复查了一遍版式：四个 Tab + 全部二级页，深夜 / 白天两套主题，
+6.9 吋（1320×2868）和 iPhone 17e 小屏各走一遍，逐张截图对着看。
+原则只有一条：**每一屏都要让人一眼知道「现在在哪、下一步点哪」**，凡是挡视线、藏操作、假空白的都改掉。
+
+### 1. 沉浸页让出底部 Tab 栏
+
+详情页和答题页底下压着 Tab 栏时，「开始练习」「翻面看答案」会被切掉一截，看着像点不到。
+做法是给 `RootView` 加一个 `HidesTabBarKey`（PreferenceKey）+ `.hidesTabBar()` 修饰符，
+子树里任意一层声明就从 `safeAreaInset` 里把 Tab 栏撤掉，用 0.22s 过渡滑出，不闪。
+
+- 已接入：`MethodDetailView`（底部「标记 / 复习卡 / 开始练习」完整露出）、`ReviewSessionView`（「翻面看答案」完整）。
+- 代价：这些页面必须自己提供返回入口 —— 两个页面顶部已有返回按钮，符合要求；
+  以后新增沉浸页时，接入 `.hidesTabBar()` 前先确认顶部有返回。
+
+### 2. 主按钮统一下沉到拇指区
+
+练习准备页（`MethodPracticeView`）和记忆宫殿选路线页（`PalaceDrillView`）原来把「开始 Lx 练习」「开始熟悉路线」
+放在滚动内容末尾，屏幕大一点就要先滚一屏才看得到。改成 `safeAreaInset(edge: .bottom)` 固定：
+`.ultraThinMaterial` 底 + 顶部一条分隔线，滚动时内容从它下面穿过。
+
+顺手在宫殿页补了一张「路线怎么选」提示卡（闭眼能走完 / 位置要具体 / 一位一物），
+因为新用户最容易在这一步选一条自己其实不熟的路线，练到一半就废掉。
+
+### 3. 启动首帧不再白闪
+
+原来冷启动第一帧是纯白（`UILaunchScreen` 默认生成），深夜主题下像闪了一下。
+新增 `Config/Info.plist`（`UILaunchScreen.UIColorName = LaunchBackground`）+
+`Assets.xcassets/LaunchBackground.colorset`，取 `Theme.canvas` 顶色 `#111524`；
+`project.pbxproj` 里把 `INFOPLIST_KEY_UILaunchScreen_Generation` 关掉，改指这个文件。
+注意 `Info.plist` 必须放在 `Config/`，放回 target 目录会被 Resources 阶段重复拷贝，报 `Multiple commands produce`。
+
+### 4. 图表与日历的可读性
+
+- 遗忘曲线：纵轴标签挤在左侧被压扁 → 改成图例右上角写「纵轴 0–100%」；
+  x 轴刻度收敛成 `0 / 7 / 15 / 30`，`.chartXScale(domain: 0...32)` 给末端留一点呼吸；
+  「复习阶梯」原来是横向滚动、9 格只露 5 格，改成 `LazyVGrid` 三列铺满。
+- 学习日历：周条圆点区分有训练（6pt，accent）与无训练（4pt，veil）；
+  底部大块空白补一张月度汇总卡（训练天数 / 累计训练 / 单日最多），页尾不再悬空。
+
+### 5. 可滑动、可删除、可分组
+
+- 横向滚动的分类胶囊（方法库）、学龄段选择器（闯关），右侧加 24pt 渐隐 `mask`，让「还能往右滑」看得出来。
+- 错题本、目标计划的删除按钮放大到 30×30 点击热区，并统一加 `confirmationDialog` 二次确认 —— 这两处都是不可撤销的。
+- 「我的」页的入口行按 `SectionHeader` 分了组，原来一长条列下来找不到节奏。
+- `ProgressRing` 去掉了 `max(0.001, …)` 的兜底：0% 时不再画一颗假装有进度的小圆点。
+
+### 6. 本轮之后的口径
+
+- 底部主操作一律 `safeAreaInset(edge: .bottom)`，不再塞进 `ScrollView` 末尾。
+- 沉浸页（详情 / 答题 / 地图）默认 `.hidesTabBar()`，同时必须自带返回。
+- 颜色分工固定：主 CTA 用 `Theme.accent`，达成态用 `Theme.success`，方法自身用 `Theme.tint(category)`。
+- 空状态必须给「下一步做什么」，不能只有一句「暂无数据」。

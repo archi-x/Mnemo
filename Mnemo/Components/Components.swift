@@ -12,13 +12,14 @@ struct ProgressRing: View {
         ZStack {
             Circle().stroke(track, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
             Circle()
-                .trim(from: 0, to: max(0.001, min(1, progress)))
+                .trim(from: 0, to: min(1, progress))
                 .stroke(
                     AngularGradient(colors: [tint.opacity(0.55), tint, tint.opacity(0.9)],
                                     center: .center),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
+                .opacity(progress > 0.004 ? 1 : 0)
                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: progress)
         }
     }
@@ -120,6 +121,52 @@ struct SectionHeader: View {
                 .disabled(action == nil)
             }
         }
+    }
+}
+
+// MARK: - 提示卡
+
+/// 提示卡里的一行：小图标 + 一句话
+struct TipLine: Identifiable {
+    let id = UUID()
+    let symbol: String
+    let text: String
+
+    init(_ symbol: String, _ text: String) {
+        self.symbol = symbol
+        self.text = text
+    }
+}
+
+/// 卡片式提示：「XX 怎么选 / 怎么算过关」这类说明，统一成一块玻璃卡
+struct TipCard: View {
+    let title: String
+    var tint: Color = Theme.accent
+    let lines: [TipLine]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(title)
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(Theme.text)
+            ForEach(lines) { line in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: line.symbol)
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundStyle(tint.opacity(0.85))
+                        .frame(width: 15)
+                        .padding(.top, 1)
+                    Text(line.text)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(Theme.textSub)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(15)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glass(radius: 18)
     }
 }
 

@@ -32,6 +32,21 @@ enum RootTab: Int, CaseIterable, Identifiable {
     }
 }
 
+/// 详情/答题这类沉浸页要求隐藏底部 Tab 栏：它们自己带底部操作条，
+/// 两个条叠在一起会把按钮压到 Tab 栏下面。
+struct HidesTabBarKey: PreferenceKey {
+    static var defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
+    }
+}
+
+extension View {
+    func hidesTabBar(_ on: Bool = true) -> some View {
+        preference(key: HidesTabBarKey.self, value: on)
+    }
+}
+
 /// 调试直达：-game <stage> <node> <level>
 struct DevGameLaunch: Identifiable {
     let stage: SchoolStage
@@ -44,6 +59,7 @@ struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @State private var tab: RootTab
     @State private var devGame: DevGameLaunch?
+    @State private var tabBarHidden = false
 
     init() {
         let args = ProcessInfo.processInfo.arguments
@@ -96,7 +112,13 @@ struct RootView: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.pendingLevelUp)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            TabBar(tab: $tab)
+            if !tabBarHidden {
+                TabBar(tab: $tab)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .onPreferenceChange(HidesTabBarKey.self) { hidden in
+            withAnimation(.easeInOut(duration: 0.22)) { tabBarHidden = hidden }
         }
         .fullScreenCover(item: $devGame) { launch in
             devGameView(launch)

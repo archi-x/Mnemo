@@ -7,6 +7,7 @@ struct WrongBookView: View {
     @State private var running = false
     @State private var queue: [Exercise] = []
     @State private var filterMethod: Int?
+    @State private var pendingDelete: WrongItem?
 
     private var items: [WrongItem] {
         guard let filterMethod else { return store.reinforcementQueue }
@@ -33,6 +34,18 @@ struct WrongBookView: View {
             } else {
                 content
             }
+        }
+        .confirmationDialog("从错题本移除？", isPresented: Binding(
+            get: { pendingDelete != nil },
+            set: { if !$0 { pendingDelete = nil } }
+        ), titleVisibility: .visible) {
+            Button("移除", role: .destructive) {
+                if let item = pendingDelete { store.removeWrong(item) }
+                pendingDelete = nil
+            }
+            Button("取消", role: .cancel) { pendingDelete = nil }
+        } message: {
+            Text("只会删掉这一条记录，之后再答错还会重新收进来。")
         }
     }
 
@@ -190,11 +203,13 @@ struct WrongBookView: View {
                 }
                 Button {
                     Haptic.tap()
-                    store.removeWrong(item)
+                    pendingDelete = item
                 } label: {
                     Image(systemName: "trash")
                         .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(Theme.textFaint)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

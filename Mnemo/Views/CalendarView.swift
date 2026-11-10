@@ -44,6 +44,14 @@ struct CalendarView: View {
         return store.dayStats.keys.filter { $0.hasPrefix(prefix + month) }.count
     }
 
+    /// 当月汇总：天数、累计关数、单日峰值
+    private var monthTotals: (days: Int, sessions: Int, peak: Int) {
+        let prefix = "\(cal.component(.year, from: monthAnchor))-"
+        let month = String(format: "%02d", cal.component(.month, from: monthAnchor))
+        let stats = store.dayStats.filter { $0.key.hasPrefix(prefix + month) }.map(\.value)
+        return (stats.count, stats.reduce(0) { $0 + $1.sessions }, stats.map(\.sessions).max() ?? 0)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -51,12 +59,40 @@ struct CalendarView: View {
                 monthCard
                 legend
                 dayDetail
+                monthSummary
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
         .background(Theme.canvas)
+    }
+
+    private var monthSummary: some View {
+        let totals = monthTotals
+        return HStack(spacing: 0) {
+            summaryItem("训练天数", "\(totals.days) 天")
+            Rectangle().fill(Theme.stroke).frame(width: 1, height: 26)
+            summaryItem("累计训练", "\(totals.sessions) 次")
+            Rectangle().fill(Theme.stroke).frame(width: 1, height: 26)
+            summaryItem("单日最多", "\(totals.peak) 次")
+        }
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
+        .glass(radius: 18)
+    }
+
+    private func summaryItem(_ title: String, _ value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(Theme.text)
+            Text(title)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textFaint)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var header: some View {
@@ -282,9 +318,11 @@ struct WeekStrip: View {
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(sessions > 0 ? Theme.text : Theme.textFaint)
+                    // 有训练就是一个实心点；没有就留一颗浅色小点，保持节奏不断行
                     Circle()
-                        .fill(sessions > 0 ? Theme.accent : Theme.veil(0.12))
-                        .frame(width: 5, height: 5)
+                        .fill(sessions > 0 ? Theme.accent : Theme.veil(0.14))
+                        .frame(width: sessions > 0 ? 6 : 4, height: sessions > 0 ? 6 : 4)
+                        .frame(height: 6)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
